@@ -1,266 +1,141 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<title>Noodknop & Status Dashboard</title>
+    <meta charset="UTF-8">
+    <title>Noodmelding Systeem</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f1f1;
+            color: #222;
+            text-align: center;
+        }
 
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #111;
-        color: white;
-        padding: 20px;
-    }
+        /* Rode nood popup */
+        #alertPopup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.95);
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-size: 40px;
+            font-weight: bold;
+            z-index: 9999;
+        }
 
-    .card {
-        background: #222;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 10px;
-    }
+        /* Login box */
+        #loginBox {
+            margin-top: 80px;
+            padding: 20px;
+            display: inline-block;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
 
-    input, select, button {
-        padding: 10px;
-        margin-top: 10px;
-        width: 100%;
-        border-radius: 8px;
-        border: none;
-    }
+        input {
+            padding: 10px;
+            width: 200px;
+            margin: 5px;
+        }
 
-    button {
-        background: #2979ff;
-        color: white;
-        font-size: 18px;
-        cursor: pointer;
-    }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #0078ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+        }
 
-    button:hover {
-        background: #1c54b2;
-    }
-
-    #noodBtn {
-        background: red;
-        font-size: 22px;
-        font-weight: bold;
-    }
-
-    #alertPopup {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(255,0,0,0.9);
-        color: white;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        font-size: 40px;
-        font-weight: bold;
-        z-index: 9999;
-        padding: 40px;
-    }
-
-    .status-green { color: #00e676; }
-    .status-orange { color: #ff9100; }
-    .status-red { color: #ff1744; }
-</style>
+        button:hover {
+            background: #005fcc;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Nederbeek Noodknop Dashboard</h1>
+    <!-- Noodmelding Popup -->
+    <div id="alertPopup">
+        <div id="alertText">NOODKNOP INGEDRUKT!</div>
+        <div id="alertDoor" style="font-size:30px; margin-top:20px;"></div>
+        <div style="font-size:18px; opacity:0.8; margin-top:40px;">
+            Klik ergens om te sluiten
+        </div>
+    </div>
 
-<div class="card" id="loginCard">
-    <h2>Inloggen</h2>
-    <input type="text" id="username" placeholder="Naam">
-    <input type="text" id="roepnummer" placeholder="Roepnummer">
-    <button onclick="login()">Login</button>
-</div>
+    <!-- Login scherm -->
+    <div id="loginBox">
+        <h2>Login</h2>
+        <input id="username" placeholder="Gebruikersnaam"><br>
+        <input id="password" type="password" placeholder="Wachtwoord"><br>
+        <button id="loginBtn">Login</button>
+    </div>
 
-<div class="card" id="dashboard" style="display:none;">
-    <h2>Welkom, <span id="userDisplay"></span></h2>
+    <!-- Firebase scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    <h3>Status wijzigen</h3>
-    <select id="statusSelect" onchange="updateStatus()">
-        <option value="1">1 - Inzetbaar</option>
-        <option value="2">2 - Aanrijdend</option>
-        <option value="3">3 - Ter plaatse</option>
-        <option value="4">4 - Bezet</option>
-        <option value="5">5 - Transport aanvraag</option>
-        <option value="6">6 - Aanvraag OC</option>
-        <option value="7">7 - Spoed OC</option>
-        <option value="8">8 - Uitdienst</option>
-    </select>
+        // 🔥 JOUW Firebase config HIER invullen
+        const firebaseConfig = {
+            apiKey: "JOUW_API_KEY",
+            authDomain: "JOUW_project.firebaseapp.com",
+            databaseURL: "https://JOUW-project-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "JOUW_project",
+            storageBucket: "JOUW_project.appspot.com",
+            messagingSenderId: "JOUW_ID",
+            appId: "JOUW_APP_ID"
+        };
 
-    <button onclick="toggleDienst()">In/Uit Dienst</button>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    <button id="noodBtn" onclick="triggerNood()">NOODKNOP</button>
+        const alertPopup = document.getElementById("alertPopup");
+        const alertDoor = document.getElementById("alertDoor");
 
-    <!-- RESET NOODMELDING -->
-    <button style="background:#444; margin-top:10px;" onclick="resetNood()">Noodmelding Reset</button>
-</div>
+        // 🔔 Noodmelding uitlezen
+        onValue(ref(db, "noodmelding"), (snap) => {
+            const data = snap.val();
 
-<div class="card">
-    <h2>Overzicht medewerkers (Live)</h2>
-    <div id="liveList"></div>
-</div>
-
-<div id="alertPopup"></div>
-
-<!-- HARD ALARM GELUID -->
-<audio id="alarmSound" loop>
-    <source src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" type="audio/ogg">
-</audio>
-
-<!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
-    authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
-    databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/",
-    projectId: "politie-nederbeek-fd6ff",
-    storageBucket: "politie-nederbeek-fd6ff.firebasestorage.app",
-    messagingSenderId: "49112852872",
-    appId: "1:49112852872:web:9b235d5e5dfd2c89aaf23d",
-    measurementId: "G-5TVFPYEZMS"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth();
-
-let currentUser = null;
-
-//////////////////////
-// LOGIN
-//////////////////////
-
-window.login = function () {
-    const name = document.getElementById("username").value;
-    const rn   = document.getElementById("roepnummer").value;
-
-    if (!name || !rn) {
-        alert("Vul naam en roepnummer in!");
-        return;
-    }
-
-    signInAnonymously(auth).then(() => {
-        currentUser = rn;
-
-        update(ref(db, "gebruikers/" + rn), {
-            naam: name,
-            status: 1,
-            dienst: "in",
-            tijd: Date.now()
+            if (data.actief === true) {
+                alertPopup.style.display = "flex";
+                alertDoor.textContent = "Door: " + data.door;
+            } else {
+                alertPopup.style.display = "none";
+            }
         });
 
-        document.getElementById("loginCard").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-        document.getElementById("userDisplay").innerText = name + " (" + rn + ")";
-    });
-};
-
-//////////////////////
-// STATUS
-//////////////////////
-
-window.updateStatus = function () {
-    const newStatus = document.getElementById("statusSelect").value;
-
-    update(ref(db, "gebruikers/" + currentUser), {
-        status: Number(newStatus),
-        tijd: Date.now()
-    });
-};
-
-window.toggleDienst = function () {
-    const dienstRef = ref(db, "gebruikers/" + currentUser);
-
-    onValue(dienstRef, (snap) => {
-        const current = snap.val();
-        const newDienst = current.dienst === "in" ? "uit" : "in";
-
-        update(dienstRef, {
-            dienst: newDienst,
-            tijd: Date.now()
+        // ❌ Popup sluiten door erop te klikken
+        alertPopup.addEventListener("click", function () {
+            update(ref(db, "noodmelding"), {
+                actief: false,
+                door: "",
+                tijd: 0
+            });
         });
-    }, { onlyOnce: true });
-};
 
-//////////////////////
-// NOODKNOP + RESET
-//////////////////////
+        // 🔑 Login (simpel voorbeeld)
+        document.getElementById("loginBtn").addEventListener("click", () => {
+            const u = username.value.trim();
+            const p = password.value.trim();
 
-window.triggerNood = function () {
-    update(ref(db, "noodmelding"), {
-        actief: true,
-        door: currentUser,
-        tijd: Date.now()
-    });
-};
+            if (u === "admin" && p === "1234") {
+                alert("Ingelogd!");
+            } else {
+                alert("Onjuiste login!");
+            }
+        });
 
-window.resetNood = function () {
-    update(ref(db, "noodmelding"), {
-        actief: false,
-        door: "",
-        tijd: Date.now()
-    });
-};
-
-//////////////////////
-// NOOD MELDING POPUP + GELUID
-//////////////////////
-
-const alarmSound = document.getElementById("alarmSound");
-
-onValue(ref(db, "noodmelding"), (snap) => {
-    const data = snap.val();
-    const popup = document.getElementById("alertPopup");
-
-    if (!data || !data.actief) {
-        popup.style.display = "none";
-        alarmSound.pause();
-        alarmSound.currentTime = 0;
-        return;
-    }
-
-    popup.style.display = "flex";
-    popup.innerHTML = "NOODKNOP INGEDRUKT!<br><br>Door: " + data.door;
-
-    alarmSound.play().catch(() => {
-        console.log("Audio wacht op gebruikersinteractie");
-    });
-});
-
-//////////////////////
-// LIVE LIST
-//////////////////////
-
-onValue(ref(db, "gebruikers"), (snap) => {
-    const list = snap.val();
-    const container = document.getElementById("liveList");
-    container.innerHTML = "";
-
-    for (const key in list) {
-        const u = list[key];
-
-        let kleur = "white";
-        if (u.status == 1) kleur = "#00e676";
-        if (u.status == 4) kleur = "#ff9100";
-        if (u.status == 7) kleur = "#ff1744";
-
-        const div = document.createElement("div");
-        div.style.color = kleur;
-        div.innerHTML =
-            `<strong>${u.naam}</strong> (${key}) — Status: ${u.status} — Dienst: ${u.dienst}`;
-
-        container.appendChild(div);
-    }
-});
-</script>
+    </script>
 
 </body>
 </html>
