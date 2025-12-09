@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Noodknop & Status Dashboard</title>
+
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -52,9 +53,11 @@
         display: none;
         justify-content: center;
         align-items: center;
+        text-align: center;
         font-size: 40px;
         font-weight: bold;
         z-index: 9999;
+        padding: 40px;
     }
 
     .status-green { color: #00e676; }
@@ -91,6 +94,9 @@
     <button onclick="toggleDienst()">In/Uit Dienst</button>
 
     <button id="noodBtn" onclick="triggerNood()">NOODKNOP</button>
+
+    <!-- RESET NOODMELDING -->
+    <button style="background:#444; margin-top:10px;" onclick="resetNood()">Noodmelding Reset</button>
 </div>
 
 <div class="card">
@@ -100,6 +106,10 @@
 
 <div id="alertPopup"></div>
 
+<!-- HARD ALARM GELUID -->
+<audio id="alarmSound" loop>
+    <source src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" type="audio/ogg">
+</audio>
 
 <!-- FIREBASE -->
 <script type="module">
@@ -124,7 +134,6 @@ const auth = getAuth();
 
 let currentUser = null;
 
-
 //////////////////////
 // LOGIN
 //////////////////////
@@ -141,7 +150,6 @@ window.login = function () {
     signInAnonymously(auth).then(() => {
         currentUser = rn;
 
-        // Sla gebruiker op in database
         update(ref(db, "gebruikers/" + rn), {
             naam: name,
             status: 1,
@@ -155,9 +163,8 @@ window.login = function () {
     });
 };
 
-
 //////////////////////
-// STATUS UPDATES
+// STATUS
 //////////////////////
 
 window.updateStatus = function () {
@@ -183,9 +190,8 @@ window.toggleDienst = function () {
     }, { onlyOnce: true });
 };
 
-
 //////////////////////
-// NOODKNOP
+// NOODKNOP + RESET
 //////////////////////
 
 window.triggerNood = function () {
@@ -196,26 +202,41 @@ window.triggerNood = function () {
     });
 };
 
+window.resetNood = function () {
+    update(ref(db, "noodmelding"), {
+        actief: false,
+        door: "",
+        tijd: Date.now()
+    });
+};
 
 //////////////////////
-// LIVE NOOD ALERT
+// NOOD MELDING POPUP + GELUID
 //////////////////////
+
+const alarmSound = document.getElementById("alarmSound");
 
 onValue(ref(db, "noodmelding"), (snap) => {
     const data = snap.val();
+    const popup = document.getElementById("alertPopup");
+
     if (!data || !data.actief) {
-        document.getElementById("alertPopup").style.display = "none";
+        popup.style.display = "none";
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
         return;
     }
 
-    document.getElementById("alertPopup").style.display = "flex";
-    document.getElementById("alertPopup").innerHTML =
-        "NOODKNOP INGEDRUKT!<br><br>Door: " + data.door;
+    popup.style.display = "flex";
+    popup.innerHTML = "NOODKNOP INGEDRUKT!<br><br>Door: " + data.door;
+
+    alarmSound.play().catch(() => {
+        console.log("Audio wacht op gebruikersinteractie");
+    });
 });
 
-
 //////////////////////
-// LIVE GEBRUIKERS LIJST
+// LIVE LIST
 //////////////////////
 
 onValue(ref(db, "gebruikers"), (snap) => {
@@ -235,7 +256,7 @@ onValue(ref(db, "gebruikers"), (snap) => {
         div.style.color = kleur;
         div.innerHTML =
             `<strong>${u.naam}</strong> (${key}) — Status: ${u.status} — Dienst: ${u.dienst}`;
-        
+
         container.appendChild(div);
     }
 });
