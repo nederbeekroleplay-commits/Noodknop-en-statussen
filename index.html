@@ -1,110 +1,44 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<title>Noodknop & Status Dashboard</title>
+<meta charset="UTF-8" />
+<title>Noodknop & Status Systeem</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #111;
-        color: white;
-        padding: 20px;
+    body { 
+        font-family: Arial; 
+        background:#0d0d0d; 
+        color:white; 
+        margin:0;
+        padding:0;
     }
-
-    .card {
-        background: #222;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 10px;
-    }
-
-    input, select, button {
-        padding: 10px;
-        margin-top: 10px;
-        width: 100%;
-        border-radius: 8px;
-        border: none;
-    }
-
     button {
-        background: #2979ff;
-        color: white;
-        font-size: 18px;
-        cursor: pointer;
+        padding:12px;
+        margin:5px;
+        border:none;
+        border-radius:8px;
+        font-size:16px;
+        cursor:pointer;
     }
-
-    button:hover {
-        background: #1c54b2;
+    .statusBtn { width: 160px; }
+    .card {
+        background:#1d1d1d;
+        padding:15px;
+        border-radius:10px;
+        margin:10px 0;
     }
-
-    #noodBtn {
-        background: red;
-        font-size: 22px;
-        font-weight: bold;
-    }
-
-    #alertPopup {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(255,0,0,0.9);
-        color: white;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        font-size: 40px;
-        font-weight: bold;
-        z-index: 9999;
-    }
-
-    .status-green { color: #00e676; }
-    .status-orange { color: #ff9100; }
-    .status-red { color: #ff1744; }
 </style>
-</head>
-<body>
 
-<h1>Nederbeek Noodknop Dashboard</h1>
-
-<div class="card" id="loginCard">
-    <h2>Inloggen</h2>
-    <input type="text" id="username" placeholder="Naam">
-    <input type="text" id="roepnummer" placeholder="Roepnummer">
-    <button onclick="login()">Login</button>
-</div>
-
-<div class="card" id="dashboard" style="display:none;">
-    <h2>Welkom, <span id="userDisplay"></span></h2>
-
-    <h3>Status wijzigen</h3>
-    <select id="statusSelect" onchange="updateStatus()">
-        <option value="1">1 - Inzetbaar</option>
-        <option value="2">2 - Aanrijdend</option>
-        <option value="3">3 - Ter plaatse</option>
-        <option value="4">4 - Bezet</option>
-        <option value="5">5 - Transport aanvraag</option>
-        <option value="6">6 - Aanvraag OC</option>
-        <option value="7">7 - Spoed OC</option>
-        <option value="8">8 - Uitdienst</option>
-    </select>
-
-    <button onclick="toggleDienst()">In/Uit Dienst</button>
-
-    <button id="noodBtn" onclick="triggerNood()">NOODKNOP</button>
-</div>
-
-<div class="card">
-    <h2>Overzicht medewerkers (Live)</h2>
-    <div id="liveList"></div>
-</div>
-
-<div id="alertPopup"></div>
-
+<!-- GELUID VOOR NOODKNOP -->
+<audio id="alertSound">
+    <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
+</audio>
 
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -119,127 +53,285 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const db = getDatabase();
 const auth = getAuth();
 
 let currentUser = null;
-
-
-//////////////////////
-// LOGIN
-//////////////////////
-
-window.login = function () {
+let currentRoepnummer = null;
+// ------------ LOGIN FUNCTIE -------------
+window.login = function() {
     const name = document.getElementById("username").value;
-    const rn   = document.getElementById("roepnummer").value;
+    const roep = document.getElementById("roepnummer").value;
 
-    if (!name || !rn) {
-        alert("Vul naam en roepnummer in!");
+    if (!name || !roep) {
+        alert("Vul je naam en roepnummer in!");
         return;
     }
 
     signInAnonymously(auth).then(() => {
-        currentUser = rn;
+        currentUser = name;
+        currentRoepnummer = roep;
 
-        // Sla gebruiker op in database
-        update(ref(db, "gebruikers/" + rn), {
-            naam: name,
+        set(ref(db, "users/" + roep), {
+            username: name,
+            roepnummer: roep,
             status: 1,
-            dienst: "in",
-            tijd: Date.now()
+            dienst: "indienst",
+            timestamp: Date.now()
         });
 
-        document.getElementById("loginCard").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-        document.getElementById("userDisplay").innerText = name + " (" + rn + ")";
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("main").style.display = "block";
     });
 };
 
+// ------------- STATUS WIJZIGEN --------------
+window.setStatus = function(status) {
+    if (!currentRoepnummer) return;
 
-//////////////////////
-// STATUS UPDATES
-//////////////////////
+    set(ref(db, "users/" + currentRoepnummer + "/status"), status);
+    set(ref(db, "users/" + currentRoepnummer + "/timestamp"), Date.now());
+};
 
-window.updateStatus = function () {
-    const newStatus = document.getElementById("statusSelect").value;
+// ------------- DIENST --------------
+window.goUitDienst = function() {
+    if (!currentRoepnummer) return;
 
-    update(ref(db, "gebruikers/" + currentUser), {
-        status: Number(newStatus),
-        tijd: Date.now()
+    remove(ref(db, "users/" + currentRoepnummer));
+    alert("Je bent uit dienst gezet.");
+
+    document.getElementById("main").style.display = "none";
+    document.getElementById("loginScreen").style.display = "block";
+};
+
+window.goInDienst = function() {
+    if (!currentRoepnummer) return;
+
+    set(ref(db, "users/" + currentRoepnummer + "/dienst"), "indienst");
+};
+
+// ------------- NOODKNOP --------------
+window.activateEmergency = function() {
+    set(ref(db, "emergencyAlert"), {
+        active: true,
+        username: currentUser,
+        roepnummer: currentRoepnummer,
+        timestamp: Date.now()
     });
+
+    document.getElementById("alertSound").play();
 };
 
-window.toggleDienst = function () {
-    const dienstRef = ref(db, "gebruikers/" + currentUser);
-
-    onValue(dienstRef, (snap) => {
-        const current = snap.val();
-        const newDienst = current.dienst === "in" ? "uit" : "in";
-
-        update(dienstRef, {
-            dienst: newDienst,
-            tijd: Date.now()
-        });
-    }, { onlyOnce: true });
+// ------------- RESET NOODKNOP --------------
+window.resetEmergency = function() {
+    set(ref(db, "emergencyAlert"), { active: false });
 };
 
-
-//////////////////////
-// NOODKNOP
-//////////////////////
-
-window.triggerNood = function () {
-    update(ref(db, "noodmelding"), {
-        actief: true,
-        door: currentUser,
-        tijd: Date.now()
-    });
+// ------------- EINDE DIENST RESET --------------
+window.resetDienst = function() {
+    remove(ref(db, "users"));
+    set(ref(db, "emergencyAlert"), { active: false });
+    alert("De hele dienst is gereset.");
 };
 
-
-//////////////////////
-// LIVE NOOD ALERT
-//////////////////////
-
-onValue(ref(db, "noodmelding"), (snap) => {
-    const data = snap.val();
-    if (!data || !data.actief) {
-        document.getElementById("alertPopup").style.display = "none";
-        return;
+// ------------ STATUS KLEUREN --------------
+window.statusColor = function(s) {
+    switch(s) {
+        case 1: return "#4caf50";
+        case 2: return "#1e88e5";
+        case 3: return "#1565c0";
+        case 4: return "#ff9800";
+        case 5: return "#f44336";
+        case 6: return "#b71c1c";
+        case 7: return "#880e4f";
+        case 8: return "#424242";
+        default: return "gray";
     }
+};
+// ------------ REALTIME GEBRUIKERS OVERZICHT --------------
+const usersRef = ref(db, "users");
+onValue(usersRef, (snapshot) => {
+    const data = snapshot.val() || {};
+    const overview = document.getElementById("overviewList");
 
-    document.getElementById("alertPopup").style.display = "flex";
-    document.getElementById("alertPopup").innerHTML =
-        "NOODKNOP INGEDRUKT!<br><br>Door: " + data.door;
+    overview.innerHTML = "";
+
+    Object.values(data)
+        .sort((a, b) => a.status - b.status) // sorteren op status
+        .forEach(u => {
+            const box = document.createElement("div");
+            box.style.background = statusColor(u.status);
+            box.style.padding = "12px";
+            box.style.borderRadius = "10px";
+            box.style.margin = "5px 0";
+            box.style.color = "white";
+            box.style.fontSize = "18px";
+
+            box.innerHTML = `
+                <strong>${u.username}</strong> 
+                (${u.roepnummer})  
+                — Status ${u.status}
+            `;
+
+            overview.appendChild(box);
+        });
 });
 
+// ------------ NOODKNOP ALERT LUISTEREN --------------
+const alertRef = ref(db, "emergencyAlert");
+onValue(alertRef, (snapshot) => {
+    const data = snapshot.val();
+    const alertBox = document.getElementById("emergencyAlertBox");
 
-//////////////////////
-// LIVE GEBRUIKERS LIJST
-//////////////////////
-
-onValue(ref(db, "gebruikers"), (snap) => {
-    const list = snap.val();
-    const container = document.getElementById("liveList");
-    container.innerHTML = "";
-
-    for (const key in list) {
-        const u = list[key];
-
-        let kleur = "white";
-        if (u.status == 1) kleur = "#00e676";
-        if (u.status == 4) kleur = "#ff9100";
-        if (u.status == 7) kleur = "#ff1744";
-
-        const div = document.createElement("div");
-        div.style.color = kleur;
-        div.innerHTML =
-            `<strong>${u.naam}</strong> (${key}) — Status: ${u.status} — Dienst: ${u.dienst}`;
-        
-        container.appendChild(div);
+    if (data && data.active) {
+        alertBox.style.display = "flex";
+        alertBox.innerHTML = `
+            <div style="text-align:center;">
+                <h1 style="font-size:50px;color:white;">🚨 NOODKNOP INGEDRUKT 🚨</h1>
+                <h2 style="color:white;font-size:35px;">
+                    ${data.username} (${data.roepnummer})
+                </h2>
+                <button onclick="resetEmergency()" 
+                    style="padding:20px;font-size:25px;background:white;color:red;border-radius:12px;">
+                    Reset
+                </button>
+            </div>
+        `;
+    } else {
+        alertBox.style.display = "none";
     }
 });
 </script>
+<body style="font-family: Arial; background:#f2f2f2; margin:0; padding:0;">
+
+<!-- ================= LOGIN PAGINA ================= -->
+<div id="loginPage" style="padding:30px; max-width:400px; margin:auto;">
+    <h2>Inloggen</h2>
+
+    <label>Gebruikersnaam</label>
+    <input id="loginUsername" type="text" style="width:100%; padding:10px; margin-bottom:10px;">
+
+    <label>Roepnummer</label>
+    <input id="loginRoepnummer" type="text" style="width:100%; padding:10px; margin-bottom:20px;">
+
+    <button onclick="login()"
+        style="width:100%; padding:15px; background:black; color:white; font-size:18px; border:none;">
+        Login
+    </button>
+</div>
+
+<!-- ================= DASHBOARD ================= -->
+<div id="dashboard" style="display:none; padding:20px;">
+
+    <h2 id="welcomeTitle">Welkom</h2>
+
+    <!-- INDIEST / UITDIENST -->
+    <div style="margin-bottom:20px;">
+        <button onclick="setStatus(1)" style="padding:12px;">🚓 Indienst</button>
+        <button onclick="setStatus(8)" style="padding:12px; background:red; color:white;">❌ Uitdienst</button>
+    </div>
+
+    <!-- STATUS KNOPPEN -->
+    <div>
+        <h3>Status instellen:</h3>
+        <button onclick="setStatus(1)">1 – Inzetbaar</button>
+        <button onclick="setStatus(2)">2 – Aanrijdend</button>
+        <button onclick="setStatus(3)">3 – Ter plaatse</button>
+        <button onclick="setStatus(4)">4 – Bezet</button>
+        <button onclick="setStatus(5)">5 – Transport</button>
+        <button onclick="setStatus(6)">6 – Aanvraag OC</button>
+        <button onclick="setStatus(7)">7 – Spoed OC</button>
+    </div>
+
+    <br><br>
+
+    <!-- NOODKNOP -->
+    <button onclick="pressEmergency()"
+        style="width:100%; padding:20px; background:red; color:white; font-size:25px; border:none; border-radius:10px;">
+        🚨 NOODKNOP
+    </button>
+
+    <!-- GELUID -->
+    <audio id="alertSound">
+        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+    </audio>
+
+    <!-- RESET KNOP -->
+    <div style="margin-top:40px;">
+        <button onclick="resetAll()" 
+            style="padding:15px; background:#333; color:white; width:100%; border:none;">
+            🔄 Reset dienst
+        </button>
+    </div>
+
+    <br><br>
+
+    <!-- OVD OVERZICHT -->
+    <h2>📋 OVD Overzicht</h2>
+    <div id="overviewList" style="background:white; padding:15px; border-radius:10px;"></div>
+
+</div>
+
+<!-- ================= NOOD ALERT ================= -->
+<div id="emergencyAlertBox"
+     style="display:none; 
+            position:fixed; 
+            top:0; left:0; 
+            width:100%; height:100%; 
+            background:red; 
+            justify-content:center; 
+            align-items:center;
+            z-index:9999;
+            text-align:center;">
+</div>
 
 </body>
-</html>
+// ================= STATUS KLEUREN =================
+function statusColor(num) {
+    switch (num) {
+        case 1: return "#28a745";       // groen – inzetbaar
+        case 2: return "#007bff";       // blauw – aanrijdend
+        case 3: return "#17a2b8";       // cyaan – ter plaatse
+        case 4: return "#ffc107";       // geel – bezet
+        case 5: return "#6f42c1";       // paars – transport
+        case 6: return "#fd7e14";       // oranje – aanvraag OC
+        case 7: return "#dc3545";       // rood – spoed OC
+        case 8: return "#343a40";       // donkergrijs – uitdienst
+        default: return "#666";
+    }
+}
+
+// ================= CSS GLOBAL STYLING =================
+document.head.insertAdjacentHTML("beforeend", `
+<style>
+
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+    }
+
+    button {
+        padding: 12px 18px;
+        margin: 4px;
+        border: none;
+        background: #222;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        filter: brightness(1.2);
+    }
+
+    #overviewList div {
+        margin-bottom: 10px;
+        border-radius: 10px;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+    }
+
+</style>
+`);
