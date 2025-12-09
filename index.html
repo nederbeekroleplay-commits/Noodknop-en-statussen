@@ -43,7 +43,6 @@
         font-weight: bold;
     }
 
-    /* Het rode noodscherm */
     #alertPopup {
         position: fixed;
         top: 0; left: 0;
@@ -51,20 +50,18 @@
         background: rgba(255,0,0,0.95);
         color: white;
         display: none;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
         font-size: 40px;
         font-weight: bold;
-        z-index: 9999;
         text-align: center;
+        z-index: 9999;
         cursor: pointer;
     }
 
-    #alertPopup small {
-        font-size: 20px;
-        margin-top: 20px;
-    }
+    .status-green { color: #00e676; }
+    .status-orange { color: #ff9100; }
+    .status-red { color: #ff1744; }
 </style>
 </head>
 <body>
@@ -103,12 +100,13 @@
     <div id="liveList"></div>
 </div>
 
-<!-- Rood Waarschuwingsscherm -->
-<div id="alertPopup" onclick="closeAlert()">
-    NOODKNOP INGEDRUKT!<br>
-    <span id="alertDoor"></span>
-    <small>Klik om te sluiten</small>
-</div>
+<!-- Rood noodscherm -->
+<div id="alertPopup" onclick="closeAlert()"></div>
+
+<!-- Hard alarmgeluid (loop) -->
+<audio id="alarmSound" loop>
+    <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
+</audio>
 
 <!-- FIREBASE -->
 <script type="module">
@@ -168,12 +166,15 @@ window.login = function () {
 
 window.updateStatus = function () {
     const newStatus = document.getElementById("statusSelect").value;
-
     update(ref(db, "gebruikers/" + currentUser), {
         status: Number(newStatus),
         tijd: Date.now()
     });
 };
+
+//////////////////////
+// DIENST
+//////////////////////
 
 window.toggleDienst = function () {
     const dienstRef = ref(db, "gebruikers/" + currentUser);
@@ -194,6 +195,10 @@ window.toggleDienst = function () {
 //////////////////////
 
 window.triggerNood = function () {
+    const alarm = document.getElementById("alarmSound");
+    alarm.currentTime = 0;
+    alarm.play();  // 🔊 Hard alarm
+
     update(ref(db, "noodmelding"), {
         actief: true,
         door: currentUser,
@@ -202,24 +207,14 @@ window.triggerNood = function () {
 };
 
 //////////////////////
-// ROOD ALERTSCREEN
+// RODE ALERT POPUP
 //////////////////////
 
-onValue(ref(db, "noodmelding"), (snap) => {
-    const data = snap.val();
-    const popup = document.getElementById("alertPopup");
-    const door = document.getElementById("alertDoor");
-
-    if (!data || data.actief !== true) {
-        popup.style.display = "none";
-        return;
-    }
-
-    popup.style.display = "flex";
-    door.innerText = "Door: " + data.door;
-});
-
 window.closeAlert = function () {
+    const alarm = document.getElementById("alarmSound");
+    alarm.pause();
+    alarm.currentTime = 0;
+
     update(ref(db, "noodmelding"), {
         actief: false,
         door: "",
@@ -229,8 +224,20 @@ window.closeAlert = function () {
     document.getElementById("alertPopup").style.display = "none";
 };
 
+onValue(ref(db, "noodmelding"), (snap) => {
+    const d = snap.val();
+    if (!d || !d.actief) {
+        document.getElementById("alertPopup").style.display = "none";
+        return;
+    }
+
+    document.getElementById("alertPopup").style.display = "flex";
+    document.getElementById("alertPopup").innerHTML =
+        "NOODKNOP INGEDRUKT!<br><br>Door: " + d.door;
+});
+
 //////////////////////
-// LIVE GEBRUIKERS
+// LIVE USERS
 //////////////////////
 
 onValue(ref(db, "gebruikers"), (snap) => {
@@ -241,11 +248,16 @@ onValue(ref(db, "gebruikers"), (snap) => {
     for (const key in list) {
         const u = list[key];
 
-        const div = document.createElement("div");
+        let kleur = "white";
+        if (u.status == 1) kleur = "#00e676";
+        if (u.status == 4) kleur = "#ff9100";
+        if (u.status == 7) kleur = "#ff1744";
 
+        const div = document.createElement("div");
+        div.style.color = kleur;
         div.innerHTML =
             `<strong>${u.naam}</strong> (${key}) — Status: ${u.status} — Dienst: ${u.dienst}`;
-        
+
         container.appendChild(div);
     }
 });
@@ -253,3 +265,4 @@ onValue(ref(db, "gebruikers"), (snap) => {
 
 </body>
 </html>
+
