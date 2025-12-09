@@ -2,224 +2,244 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Noodknop & Status Systeem</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- FIREBASE ZONDER MODULES (WERKT OP GITHUB PAGES!) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
+<title>Noodknop & Status Dashboard</title>
 <style>
-    body { 
-        font-family: Arial; 
-        background:#111; 
-        color:white; 
-        margin:0; 
-        padding:20px;
+    body {
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: white;
+        padding: 20px;
     }
+
+    .card {
+        background: #222;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+    }
+
+    input, select, button {
+        padding: 10px;
+        margin-top: 10px;
+        width: 100%;
+        border-radius: 8px;
+        border: none;
+    }
+
     button {
-        padding:12px;
-        margin:5px;
-        border:none;
-        border-radius:8px;
-        font-size:16px;
-        cursor:pointer;
+        background: #2979ff;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
     }
+
+    button:hover {
+        background: #1c54b2;
+    }
+
+    #noodBtn {
+        background: red;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    #alertPopup {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(255,0,0,0.9);
+        color: white;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        font-size: 40px;
+        font-weight: bold;
+        z-index: 9999;
+    }
+
+    .status-green { color: #00e676; }
+    .status-orange { color: #ff9100; }
+    .status-red { color: #ff1744; }
 </style>
 </head>
-
 <body>
 
-<!-- =============== LOGIN =============== -->
-<div id="loginPage">
+<h1>Nederbeek Noodknop Dashboard</h1>
+
+<div class="card" id="loginCard">
     <h2>Inloggen</h2>
-
-    <label>Naam</label><br>
-    <input id="username" style="width:100%;padding:10px;"><br><br>
-
-    <label>Roepnummer</label><br>
-    <input id="roepnummer" style="width:100%;padding:10px;"><br><br>
-
-    <button onclick="login()" style="width:100%;padding:15px;background:black;color:white;">
-        INLOGGEN
-    </button>
+    <input type="text" id="username" placeholder="Naam">
+    <input type="text" id="roepnummer" placeholder="Roepnummer">
+    <button onclick="login()">Login</button>
 </div>
 
-<!-- =============== DASHBOARD =============== -->
-<div id="dashboard" style="display:none;">
-    <h2 id="welcomeTitle"></h2>
+<div class="card" id="dashboard" style="display:none;">
+    <h2>Welkom, <span id="userDisplay"></span></h2>
 
-    <h3>Status instellen</h3>
-    <button onclick="setStatus(1)">1 – Inzetbaar</button>
-    <button onclick="setStatus(2)">2 – Aanrijdend</button>
-    <button onclick="setStatus(3)">3 – Ter plaatse</button>
-    <button onclick="setStatus(4)">4 – Bezet</button>
-    <button onclick="setStatus(5)">5 – Transport</button>
-    <button onclick="setStatus(6)">6 – Aanvraag OC</button>
-    <button onclick="setStatus(7)">7 – Spoed OC</button>
-    <button onclick="setStatus(8)" style="background:red;">8 – Uitdienst</button>
+    <h3>Status wijzigen</h3>
+    <select id="statusSelect" onchange="updateStatus()">
+        <option value="1">1 - Inzetbaar</option>
+        <option value="2">2 - Aanrijdend</option>
+        <option value="3">3 - Ter plaatse</option>
+        <option value="4">4 - Bezet</option>
+        <option value="5">5 - Transport aanvraag</option>
+        <option value="6">6 - Aanvraag OC</option>
+        <option value="7">7 - Spoed OC</option>
+        <option value="8">8 - Uitdienst</option>
+    </select>
 
-    <br><br>
+    <button onclick="toggleDienst()">In/Uit Dienst</button>
 
-    <button onclick="activateEmergency()" 
-        style="width:100%;padding:20px;font-size:30px;background:red;color:white;">
-        🚨 NOODKNOP
-    </button>
-
-    <br><br>
-
-    <button onclick="resetDienst()" 
-        style="width:100%;padding:15px;background:#444;color:white;">
-        🔄 Reset dienst
-    </button>
-
-    <hr>
-
-    <h2>📋 OVD Overzicht</h2>
-    <div id="overviewList" style="background:#fff;color:black;padding:15px;border-radius:10px;"></div>
+    <button id="noodBtn" onclick="triggerNood()">NOODKNOP</button>
 </div>
 
-<!-- =============== NOOD ALERT OVERLAY =============== -->
-<div id="emergencyAlertBox"
-     style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;
-            background:red;color:white;justify-content:center;align-items:center;
-            text-align:center;font-size:30px;z-index:9999;">
+<div class="card">
+    <h2>Overzicht medewerkers (Live)</h2>
+    <div id="liveList"></div>
 </div>
 
-<!-- GELUID -->
-<audio id="alertSound">
-    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
+<div id="alertPopup"></div>
 
-<script>
-// ================= FIREBASE CONFIG =================
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
     authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
-    databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app",
+    databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/",
     projectId: "politie-nederbeek-fd6ff",
     storageBucket: "politie-nederbeek-fd6ff.firebasestorage.app",
     messagingSenderId: "49112852872",
-    appId: "1:49112852872:web:9b235d5e5dfd2c89aaf23d"
+    appId: "1:49112852872:web:9b235d5e5dfd2c89aaf23d",
+    measurementId: "G-5TVFPYEZMS"
 };
 
-firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth();
 
-const db = firebase.database();
-const auth = firebase.auth();
+let currentUser = null;
 
-let currentUser = "";
-let currentRoepnummer = "";
 
-// ================= LOGIN =================
-function login() {
-    let name = document.getElementById("username").value;
-    let roep = document.getElementById("roepnummer").value;
+//////////////////////
+// LOGIN
+//////////////////////
 
-    if (!name || !roep) return alert("Vul alles in!");
+window.login = function () {
+    const name = document.getElementById("username").value;
+    const rn   = document.getElementById("roepnummer").value;
 
-    auth.signInAnonymously().then(() => {
-        currentUser = name;
-        currentRoepnummer = roep;
-
-        firebase.database().ref("users/" + roep).set({
-            username: name,
-            roepnummer: roep,
-            status: 1,
-            dienst: "indienst",
-            timestamp: Date.now()
-        });
-
-        document.getElementById("loginPage").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-        document.getElementById("welcomeTitle").textContent =
-            "Welkom " + name + " (" + roep + ")";
-    });
-}
-
-// ================= STATUS WIJZIGEN =================
-function setStatus(num) {
-    firebase.database().ref("users/" + currentRoepnummer + "/status").set(num);
-}
-
-// ================= NOODKNOP =================
-function activateEmergency() {
-    firebase.database().ref("emergencyAlert").set({
-        active: true,
-        username: currentUser,
-        roepnummer: currentRoepnummer,
-        timestamp: Date.now()
-    });
-}
-
-// ================= NOODKNOP RESET =================
-function resetEmergency() {
-    firebase.database().ref("emergencyAlert").set({ active:false });
-}
-
-// ================= DIENST RESET =================
-function resetDienst() {
-    firebase.database().ref("users").remove();
-    firebase.database().ref("emergencyAlert").set({ active:false });
-}
-
-// ================= STATUS KLEUR =================
-function statusColor(n) {
-    switch(n) {
-        case 1: return "#4caf50";
-        case 2: return "#1e88e5";
-        case 3: return "#1565c0";
-        case 4: return "#ff9800";
-        case 5: return "#9c27b0";
-        case 6: return "#ff5722";
-        case 7: return "#d32f2f";
-        case 8: return "#424242";
-        default: return "#555";
+    if (!name || !rn) {
+        alert("Vul naam en roepnummer in!");
+        return;
     }
-}
 
-// ================= REALTIME USERS =================
-firebase.database().ref("users").on("value", snap => {
-    const data = snap.val() || {};
-    const box = document.getElementById("overviewList");
-    box.innerHTML = "";
+    signInAnonymously(auth).then(() => {
+        currentUser = rn;
 
-    Object.values(data)
-        .sort((a,b) => a.status - b.status)
-        .forEach(u => {
-            let div = document.createElement("div");
-            div.style.background = statusColor(u.status);
-            div.style.color = "white";
-            div.style.padding = "12px";
-            div.style.marginBottom = "10px";
-            div.style.borderRadius = "10px";
-            div.textContent = `${u.username} (${u.roepnummer}) — Status ${u.status}`;
-            box.appendChild(div);
+        // Sla gebruiker op in database
+        update(ref(db, "gebruikers/" + rn), {
+            naam: name,
+            status: 1,
+            dienst: "in",
+            tijd: Date.now()
         });
+
+        document.getElementById("loginCard").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        document.getElementById("userDisplay").innerText = name + " (" + rn + ")";
+    });
+};
+
+
+//////////////////////
+// STATUS UPDATES
+//////////////////////
+
+window.updateStatus = function () {
+    const newStatus = document.getElementById("statusSelect").value;
+
+    update(ref(db, "gebruikers/" + currentUser), {
+        status: Number(newStatus),
+        tijd: Date.now()
+    });
+};
+
+window.toggleDienst = function () {
+    const dienstRef = ref(db, "gebruikers/" + currentUser);
+
+    onValue(dienstRef, (snap) => {
+        const current = snap.val();
+        const newDienst = current.dienst === "in" ? "uit" : "in";
+
+        update(dienstRef, {
+            dienst: newDienst,
+            tijd: Date.now()
+        });
+    }, { onlyOnce: true });
+};
+
+
+//////////////////////
+// NOODKNOP
+//////////////////////
+
+window.triggerNood = function () {
+    update(ref(db, "noodmelding"), {
+        actief: true,
+        door: currentUser,
+        tijd: Date.now()
+    });
+};
+
+
+//////////////////////
+// LIVE NOOD ALERT
+//////////////////////
+
+onValue(ref(db, "noodmelding"), (snap) => {
+    const data = snap.val();
+    if (!data || !data.actief) {
+        document.getElementById("alertPopup").style.display = "none";
+        return;
+    }
+
+    document.getElementById("alertPopup").style.display = "flex";
+    document.getElementById("alertPopup").innerHTML =
+        "NOODKNOP INGEDRUKT!<br><br>Door: " + data.door;
 });
 
-// ================= NOODKNOP ALERT LISTENER =================
-firebase.database().ref("emergencyAlert").on("value", snap => {
-    const d = snap.val();
-    const box = document.getElementById("emergencyAlertBox");
 
-    if (d && d.active) {
-        box.style.display = "flex";
-        box.innerHTML = `
-            🚨 NOODKNOP INGEDRUKT 🚨 <br><br>
-            ${d.username} (${d.roepnummer}) <br><br>
-            <button onclick="resetEmergency()" style="padding:15px;font-size:22px;">
-                Reset
-            </button>
-        `;
-        document.getElementById("alertSound").play();
-    } else {
-        box.style.display = "none";
+//////////////////////
+// LIVE GEBRUIKERS LIJST
+//////////////////////
+
+onValue(ref(db, "gebruikers"), (snap) => {
+    const list = snap.val();
+    const container = document.getElementById("liveList");
+    container.innerHTML = "";
+
+    for (const key in list) {
+        const u = list[key];
+
+        let kleur = "white";
+        if (u.status == 1) kleur = "#00e676";
+        if (u.status == 4) kleur = "#ff9100";
+        if (u.status == 7) kleur = "#ff1744";
+
+        const div = document.createElement("div");
+        div.style.color = kleur;
+        div.innerHTML =
+            `<strong>${u.naam}</strong> (${key}) — Status: ${u.status} — Dienst: ${u.dienst}`;
+        
+        container.appendChild(div);
     }
 });
 </script>
 
 </body>
 </html>
-
