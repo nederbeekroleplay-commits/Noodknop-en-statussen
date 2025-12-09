@@ -3,18 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Nederbeek — Meldkamer Dashboard</title>
+<title>Nederbeek — Meldkamer & VTA's</title>
 
-<!-- =========================
-     STIJL (Politie-stijl)
-     ========================= -->
 <style>
 :root{
   --bg:#001b35;
   --card:#07243d;
   --muted:#a9c2d6;
   --accent:#ffc600;
-  --accent-dark:#e0a700;
   --white:#ffffff;
 }
 *{box-sizing:border-box}
@@ -31,6 +27,7 @@ body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);
 .card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,0.5)}
 .field{margin-top:10px}
 input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--white)}
+textarea{min-height:80px;resize:vertical}
 .select-status{font-weight:700}
 .huge{font-size:18px;padding:14px;border-radius:12px}
 .nood{background:linear-gradient(180deg,#ff4d4f,#d32f2f);color:white;border:none}
@@ -45,7 +42,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid
 .link.active{background:rgba(255,255,255,0.04);color:var(--white)}
 .footer{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
 
-/* ALERT OVERLAY - knipperend */
+/* ALERT OVERLAY - pulserend */
 #alertOverlay{
   position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:99999;
   background:linear-gradient(180deg,rgba(180,0,0,0.95),rgba(120,0,0,0.95));
@@ -53,36 +50,43 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid
   animation: pulse 0.8s infinite;
 }
 @keyframes pulse {0%{opacity:1}50%{opacity:0.2}100%{opacity:1}}
-#alertOverlay h2{font-size:44px;margin:8px}
+#alertOverlay h2{font-size:48px;margin:8px}
 #alertOverlay p{font-size:20px;margin:6px}
-#enableSound{background:#fff;color:#001b35;border-radius:8px;padding:8px 10px;font-weight:700;cursor:pointer}
-.small-link{font-size:13px;color:var(--muted);text-decoration:underline;cursor:pointer}
+
+/* VTA table */
 .table{width:100%;border-collapse:collapse}
 .table th,.table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
-.vta-actions button{margin-right:6px}
+.thumb{width:80px;height:60px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.06)}
+.form-inline{display:flex;gap:8px}
+.form-inline > *{flex:1}
+
+/* small responsive tweaks */
+@media(max-width:760px){
+  .form-inline{flex-direction:column}
+  .grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <div class="title">
-      <h1>Nederbeek — Meldkamer Dashboard</h1>
+      <h1>Nederbeek — Meldkamer</h1>
       <div class="sub">Realtime statussen • Noodknop • VTA beheer</div>
     </div>
 
     <div class="controls">
       <nav class="nav" aria-label="Hoofdmenu">
         <a href="#dashboard" class="link" id="navDashboard">Dashboard</a>
-        <a href="#vtas" class="link" id="navVtas">VTA's</a>
+        <a href="#vtas" class="link" id="navVtas">VTAs</a>
       </nav>
       <button id="enableSound" class="btn">Enable sound</button>
     </div>
   </div>
 
-  <!-- MAIN content -->
+  <!-- DASHBOARD content -->
   <div id="pageDashboard" class="page">
     <div class="grid">
-      <!-- Left column -->
       <div>
         <div id="loginCard" class="card">
           <h3>Inloggen</h3>
@@ -100,7 +104,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid
           <div id="currentUser" class="small" style="margin-bottom:8px"></div>
 
           <div class="field">
-            <label class="small">Status</label>
+            <label class="small">Status (wijzigt meteen bij select)</label>
             <select id="statusSelect" class="select-status">
               <option value="1">1 — Inzetbaar, vrij</option>
               <option value="2">2 — Aanrijdend naar de melding</option>
@@ -114,8 +118,8 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid
           </div>
 
           <div style="display:flex;gap:8px;margin-top:10px">
-            <button id="btnSetStatus" class="btn">Wijzig status</button>
             <button id="btnToggleDienst" class="btn ghost">In / Uit dienst</button>
+            <button id="btnSetStatus" class="btn" style="display:none">Opslaan</button>
           </div>
 
           <div style="margin-top:14px">
@@ -134,7 +138,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid
         </div>
       </div>
 
-      <!-- Right column -->
+      <!-- RIGHT column -->
       <aside>
         <div class="card">
           <h3>OVD / Live overzicht</h3>
@@ -145,41 +149,60 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid
         <div class="card" style="margin-top:12px">
           <h3>Quick actions</h3>
           <div style="display:flex;gap:8px">
-            <button id="openVta" class="btn ghost">Open VTA-pagina</button>
-            <button id="downloadCSV" class="btn ghost">Download CSV</button>
+            <button id="openVta" class="btn ghost">Open VTA beheer</button>
+            <button id="downloadCSV" class="btn ghost">Download gebruikers CSV</button>
           </div>
-          <div class="small" style="margin-top:8px">Download of open VTA beheer voor dieptebeheer.</div>
+          <div class="small" style="margin-top:8px">Gebruik 'Open VTA beheer' om naar de VTAs-tab te navigeren.</div>
         </div>
       </aside>
     </div>
   </div>
 
-  <!-- VTA page -->
+  <!-- VTAs page (tab) -->
   <div id="pageVtas" class="page" style="display:none">
     <div class="card">
-      <h3>VTA Beheer</h3>
-      <div class="small">Voeg VTA's toe of bewerk bestaande. Alles is realtime.</div>
+      <h3>VTA — Verdachten / Personen</h3>
+      <div class="small">Vul elk veld in; als je iets niet weet wordt automatisch <strong>ONBEKEND</strong> ingevuld.</div>
 
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <input id="vtaNaam" placeholder="Naam">
-        <input id="vtaRoep" placeholder="Roepnummer">
-        <select id="vtaStatus">
-          <option value="1">1 - Inzetbaar</option>
-          <option value="2">2 - Aanrijdend</option>
-          <option value="3">3 - Ter plaatse</option>
-          <option value="4">4 - Bezet</option>
-          <option value="5">5 - Transport</option>
-          <option value="6">6 - Aanvraag OC</option>
-          <option value="7">7 - Spoed OC</option>
-          <option value="8">8 - Uitdienst</option>
-        </select>
-        <button id="btnAddVta" class="btn">Voeg toe</button>
+      <div style="margin-top:12px" class="card">
+        <h4>Nieuw VTA formulier</h4>
+
+        <div class="form-inline" style="margin-top:10px">
+          <input id="vtaNaam" placeholder="Naam">
+          <input id="vtaReden" placeholder="Redenen/omschrijven">
+        </div>
+
+        <div class="form-inline" style="margin-top:10px">
+          <input id="vtaVoertuig" placeholder="Voertuig (soort)">
+          <input id="vtaKleur" placeholder="Kleur">
+        </div>
+
+        <div class="form-inline" style="margin-top:10px">
+          <input id="vtaKenmerken" placeholder="Kenmerken">
+          <input id="vtaKenteken" placeholder="Kenteken">
+        </div>
+
+        <div style="margin-top:10px">
+          <textarea id="vtaSignalement" placeholder="Signalement (beschrijving)"></textarea>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+          <input type="file" id="vtaFoto" accept="image/*">
+          <button id="btnAddVta" class="btn">Opslaan VTA</button>
+        </div>
+
+        <div id="vtaProgress" class="small" style="margin-top:8px"></div>
       </div>
 
-      <div style="margin-top:12px; overflow:auto; max-height:420px;">
-        <table class="table" id="vtaTable" style="width:100%">
-          <thead><tr><th>Naam</th><th>Roep</th><th>Status</th><th>Dienst</th><th>Acties</th></tr></thead>
-          <tbody></tbody>
+      <div style="margin-top:12px" class="card">
+        <h4>Alle VTAs</h4>
+        <div style="margin-top:8px">
+          <input id="vtaSearch" placeholder="Zoek op naam, kenteken of kenmerken...">
+        </div>
+
+        <table class="table" style="margin-top:10px">
+          <thead><tr><th>Foto</th><th>Naam</th><th>Reden</th><th>Voertuig</th><th>Kenteken</th><th>Signalement</th><th>Acties</th></tr></thead>
+          <tbody id="vtaTableBody"></tbody>
         </table>
       </div>
     </div>
@@ -204,18 +227,16 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid
   <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
 </audio>
 
-<!-- FIREBASE compat (v8 CDN voor Pages compatibility) -->
+<!-- FIREBASE v8 CDN (compat voor Pages) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
-<!-- =========================
-     JAVASCRIPT - LOGICA
-     ========================= -->
 <script>
-/* -------------------------
+/* ======================
    Firebase config (jouw project)
-   ------------------------- */
+   ====================== */
 const firebaseConfig = {
   apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
   authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
@@ -227,11 +248,12 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const storage = firebase.storage();
 const auth = firebase.auth();
 
-/* -------------------------
+/* ======================
    DOM refs
-   ------------------------- */
+   ====================== */
 const navDashboard = document.getElementById('navDashboard');
 const navVtas = document.getElementById('navVtas');
 const pageDashboard = document.getElementById('pageDashboard');
@@ -249,32 +271,33 @@ const btnLogout = document.getElementById('btnLogout');
 const loginCard = document.getElementById('loginCard');
 const controlCard = document.getElementById('controlCard');
 const currentUserText = document.getElementById('currentUser');
-const btnSetStatus = document.getElementById('btnSetStatus');
-const btnToggleDienst = document.getElementById('btnToggleDienst');
+const statusSelect = document.getElementById('statusSelect');
 const btnNood = document.getElementById('btnNood');
 const btnResetNood = document.getElementById('btnResetNood');
 const btnResetDienst = document.getElementById('btnResetDienst');
-const statusSelect = document.getElementById('statusSelect');
 const ovdList = document.getElementById('ovdList');
 const openVta = document.getElementById('openVta');
 const downloadCSV = document.getElementById('downloadCSV');
 
-/* VTA refs */
 const vtaNaam = document.getElementById('vtaNaam');
-const vtaRoep = document.getElementById('vtaRoep');
-const vtaStatus = document.getElementById('vtaStatus');
+const vtaReden = document.getElementById('vtaReden');
+const vtaVoertuig = document.getElementById('vtaVoertuig');
+const vtaKleur = document.getElementById('vtaKleur');
+const vtaKenmerken = document.getElementById('vtaKenmerken');
+const vtaKenteken = document.getElementById('vtaKenteken');
+const vtaSignalement = document.getElementById('vtaSignalement');
+const vtaFoto = document.getElementById('vtaFoto');
 const btnAddVta = document.getElementById('btnAddVta');
-const vtaTableBody = document.querySelector('#vtaTable tbody');
+const vtaProgress = document.getElementById('vtaProgress');
+const vtaTableBody = document.getElementById('vtaTableBody');
+const vtaSearch = document.getElementById('vtaSearch');
 
-/* -------------------------
-   State
-   ------------------------- */
-let current = null; // {naam, roep}
+let current = null;
 let soundEnabled = false;
 
 /* -------------------------
-   Navigation (simple hash)
-   ------------------------- */
+   Navigation (hash)
+--------------------------*/
 function showPage(page){
   navDashboard.classList.remove('active');
   navVtas.classList.remove('active');
@@ -288,29 +311,24 @@ function showPage(page){
     pageDashboard.style.display = 'block';
   }
 }
-window.addEventListener('hashchange', () => {
-  const h = location.hash.replace('#','') || 'dashboard';
-  showPage(h);
-});
-document.getElementById('navDashboard').addEventListener('click',()=>{location.hash='dashboard'});
-document.getElementById('navVtas').addEventListener('click',()=>{location.hash='vtas'});
-openVta.addEventListener('click',()=>{location.hash='vtas'});
-
-/* initialize default page */
-if (!location.hash) location.hash = '#dashboard';
+window.addEventListener('hashchange', ()=> showPage(location.hash.replace('#','') || 'dashboard'));
+navDashboard.addEventListener('click', ()=> location.hash='dashboard');
+navVtas.addEventListener('click', ()=> location.hash='vtas');
+openVta.addEventListener('click', ()=> location.hash='vtas');
+if (!location.hash) location.hash='#dashboard';
 showPage(location.hash.replace('#','') || 'dashboard');
 
 /* -------------------------
-   Enable sound helper
-   ------------------------- */
+   Enable sound helper (user gesture)
+--------------------------*/
 enableSound.addEventListener('click', () => {
-  alarmAudio.play().then(()=>{ alarmAudio.pause(); alarmAudio.currentTime = 0; soundEnabled = true; enableSound.style.display='none'; alert('Geluid ingeschakeld voor deze tab.'); })
-  .catch(()=>{ alert('Autoplay geblokkeerd — probeer nogmaals te klikken.'); });
+  alarmAudio.play().then(()=>{ alarmAudio.pause(); alarmAudio.currentTime = 0; soundEnabled=true; enableSound.style.display='none'; alert('Geluid ingeschakeld voor deze tab.'); })
+  .catch(()=>{ alert('Autoplay geblokkeerd — klik nogmaals Enable sound.'); });
 });
 
 /* -------------------------
-   LOGIN / LOGOUT
-   ------------------------- */
+   LOGIN
+--------------------------*/
 btnLogin.addEventListener('click', async () => {
   const naam = inputName.value.trim();
   const roep = inputRoep.value.trim();
@@ -330,25 +348,20 @@ btnLogin.addEventListener('click', async () => {
 btnLogout.addEventListener('click', async () => {
   if (!current) return;
   await db.ref('gebruikers/' + current.roep).remove().catch(()=>{});
-  current = null;
-  loginCard.style.display = 'block';
-  controlCard.style.display = 'none';
-  btnLogout.style.display = 'none';
+  current=null;
+  loginCard.style.display='block';
+  controlCard.style.display='none';
+  btnLogout.style.display='none';
   localStorage.removeItem('nb_user');
 });
 
-/* restore local values (not auto login) */
-(function restore(){
-  const s = localStorage.getItem('nb_user');
-  if (s) {
-    try { const u = JSON.parse(s); inputName.value=u.naam; inputRoep.value=u.roep; } catch(e){}
-  }
-})();
+/* restore local */
+(function restore(){ const s = localStorage.getItem('nb_user'); if (s) { try { const u = JSON.parse(s); inputName.value=u.naam; inputRoep.value=u.roep; } catch(e){} } })();
 
 /* -------------------------
-   STATUS meta (color + label)
-   ------------------------- */
-function statusMeta(s) {
+   Status metadata
+--------------------------*/
+function statusMeta(s){
   switch(Number(s)){
     case 1: return {color:'#007f0e', label:'1 — Inzetbaar'};
     case 2: return {color:'#005bbb', label:'2 — Aanrijdend'};
@@ -363,85 +376,87 @@ function statusMeta(s) {
 }
 
 /* -------------------------
-   Set status
-   ------------------------- */
-document.getElementById('btnSetStatus').addEventListener('click', async () => {
+   Update status instantly when select changes
+--------------------------*/
+statusSelect.addEventListener('change', async () => {
   if (!current) return alert('Niet ingelogd');
   const s = Number(statusSelect.value);
-  await db.ref('gebruikers/' + current.roep).update({status: s, timestamp: Date.now()});
+  if (s === 8) {
+    // uitdienst = remove from DB
+    await db.ref('gebruikers/' + current.roep).remove();
+    // reflect locally
+    controlCard.style.display='none';
+    loginCard.style.display='block';
+    btnLogout.style.display='none';
+    localStorage.removeItem('nb_user');
+    current = null;
+    return;
+  }
+  await db.ref('gebruikers/' + current.roep).update({status:s, timestamp: Date.now()});
 });
 
-/* -------------------------
-   Toggle dienst
-   ------------------------- */
+/* Toggle dienst (if set to uit -> remove) */
 btnToggleDienst.addEventListener('click', async () => {
   if (!current) return alert('Niet ingelogd');
-  const userRef = db.ref('gebruikers/' + current.roep);
-  userRef.once('value', async snap => {
-    const data = snap.val() || {};
-    const newDienst = data.dienst === 'in' ? 'uit' : 'in';
-    await userRef.update({dienst: newDienst, timestamp: Date.now()});
-  });
+  const snap = await db.ref('gebruikers/' + current.roep).once('value');
+  const data = snap.val() || {};
+  const newDienst = data.dienst === 'in' ? 'uit' : 'in';
+  if (newDienst === 'uit') {
+    await db.ref('gebruikers/' + current.roep).remove();
+    controlCard.style.display='none';
+    loginCard.style.display='block';
+    btnLogout.style.display='none';
+    current = null;
+    localStorage.removeItem('nb_user');
+  } else {
+    await db.ref('gebruikers/' + current.roep).update({dienst:'in', timestamp: Date.now()});
+  }
 });
 
 /* -------------------------
-   Noodknop: zet db waarde + probeer lokaal te spelen
-   ------------------------- */
+   Noodknop & alert
+--------------------------*/
 btnNood.addEventListener('click', async () => {
   if (!current) return alert('Niet ingelogd');
   await db.ref('noodmelding').set({actief:true, door: current.roep, tijd: Date.now()});
-  if (soundEnabled) { try { await alarmAudio.play(); } catch(e){} }
+  if (soundEnabled) try{ await alarmAudio.play(); }catch(e){}
 });
 
-/* Reset functies */
-btnResetNood.addEventListener('click', async () => {
+/* reset */
+btnResetNood.addEventListener('click', async ()=> {
   if (!confirm('Reset noodmelding?')) return;
   await db.ref('noodmelding').set({actief:false, door:'', tijd:0});
 });
-btnResetDienst.addEventListener('click', async () => {
-  if (!confirm('Weet je zeker? Dit verwijdert alle gebruikers.')) return;
+btnResetDienst.addEventListener('click', async ()=> {
+  if (!confirm('Weet je het zeker? Dit verwijdert alle gebruikers.')) return;
   await db.ref('gebruikers').remove();
   alert('Dienst gereset');
 });
 
-/* -------------------------
-   Alert overlay: click to reset (also close button)
-   ------------------------- */
-closeAlert.addEventListener('click', async (e) => {
-  e.stopPropagation();
-  await db.ref('noodmelding').set({actief:false, door:'', tijd:0});
-});
-alertOverlay.addEventListener('click', async () => {
-  await db.ref('noodmelding').set({actief:false, door:'', tijd:0});
-});
+/* alert overlay handlers */
+closeAlert.addEventListener('click', async (e)=>{ e.stopPropagation(); await db.ref('noodmelding').set({actief:false, door:'', tijd:0}); });
+alertOverlay.addEventListener('click', async ()=>{ await db.ref('noodmelding').set({actief:false, door:'', tijd:0}); });
 
-/* -------------------------
-   Listen realtime to noodmelding
-   - show overlay and play alarm (loop)
-   - overlay pulses via CSS animation
-   ------------------------- */
+/* listen to noodmelding realtime */
 db.ref('noodmelding').on('value', snap => {
   const d = snap.val();
   if (!d || !d.actief) {
-    alertOverlay.style.display = 'none';
-    try{ alarmAudio.pause(); alarmAudio.currentTime = 0; }catch(e){}
+    alertOverlay.style.display='none';
+    try{ alarmAudio.pause(); alarmAudio.currentTime = 0;}catch(e){}
     return;
   }
   alertDetail.innerText = `Door: ${d.door} — ${new Date(d.tijd||0).toLocaleString()}`;
-  alertOverlay.style.display = 'flex';
-  // try to play; if blocked, user should click "Enable sound"
+  alertOverlay.style.display='flex';
   alarmAudio.play().catch(()=>{ /* autoplay blocked */ });
 });
 
 /* -------------------------
-   Live gebruikerslijst (OVD overzicht)
-   - sorts by status ascending
-   - shows color bar + label
-   ------------------------- */
+   Live gebruikerslijst rendering
+--------------------------*/
 db.ref('gebruikers').on('value', snap => {
   const data = snap.val() || {};
   const arr = Object.values(data || {});
-  arr.sort((a,b) => (Number(a.status||9) - Number(b.status||9)) || (''+a.naam).localeCompare(b.naam));
+  arr.sort((a,b)=> (Number(a.status||9)-Number(b.status||9)) || (''+a.naam).localeCompare(''+b.naam));
   ovdList.innerHTML = '';
   arr.forEach(u => {
     const meta = statusMeta(u.status);
@@ -467,58 +482,131 @@ db.ref('gebruikers').on('value', snap => {
 });
 
 /* -------------------------
-   VTA management (add / edit / remove)
-   ------------------------- */
+   VTA management
+   - auto-fill ONBEKEND if field empty
+   - photo upload to Firebase Storage (vtas/<id>/photo.jpg)
+--------------------------*/
+function ensureVal(v){ return (v && v.trim().length>0) ? v.trim() : 'ONBEKEND'; }
+
 btnAddVta.addEventListener('click', async () => {
-  const naam = vtaNaam.value.trim();
-  const roep = vtaRoep.value.trim();
-  const status = Number(vtaStatus.value);
-  if (!naam || !roep) return alert('Vul naam en roepnummer in');
-  await db.ref('vtas/' + roep).set({naam, roep, status, dienst:'in', timestamp: Date.now()});
-  vtaNaam.value=''; vtaRoep.value='';
+  let naam = ensureVal(vtaNaam.value);
+  let reden = ensureVal(vtaReden.value);
+  let voertuig = ensureVal(vtaVoertuig.value);
+  let kleur = ensureVal(vtaKleur.value);
+  let kenmerken = ensureVal(vtaKenmerken.value);
+  let kenteken = ensureVal(vtaKenteken.value);
+  let signal = ensureVal(vtaSignalement.value);
+
+  // push a new VTA to DB to get key
+  const newRef = db.ref('vtas').push();
+  const id = newRef.key;
+
+  // prepare base record
+  const rec = {
+    id,
+    naam,
+    reden,
+    voertuig,
+    kleur,
+    kenmerken,
+    kenteken,
+    signalement: signal,
+    fotoUrl: '',
+    timestamp: Date.now()
+  };
+
+  vtaProgress.textContent = 'Opslaan...';
+
+  // if a file selected, upload to storage
+  const file = vtaFoto.files[0];
+  if (file) {
+    const ext = file.name.split('.').pop();
+    const storageRef = storage.ref().child('vtas/' + id + '/photo.' + ext);
+    const uploadTask = storageRef.put(file);
+
+    uploadTask.on('state_changed', snapshot => {
+      const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+      vtaProgress.textContent = `Upload ${pct}%`;
+    }, err => {
+      console.error(err); vtaProgress.textContent = 'Upload fout, opslaan zonder foto...';
+      // still save record without fotoUrl
+      newRef.set(rec).then(()=>{ vtaProgress.textContent='Opgeslagen zonder foto'; clearVtaForm(); });
+    }, async () => {
+      const url = await uploadTask.snapshot.ref.getDownloadURL();
+      rec.fotoUrl = url;
+      await newRef.set(rec);
+      vtaProgress.textContent = 'Opgeslagen';
+      clearVtaForm();
+    });
+  } else {
+    await newRef.set(rec);
+    vtaProgress.textContent = 'Opgeslagen (geen foto)';
+    clearVtaForm();
+  }
 });
 
-/* render VTAs realtime */
-db.ref('vtas').on('value', snap => {
-  const data = snap.val() || {};
-  vtaTableBody.innerHTML = '';
-  Object.values(data).sort((a,b)=> (Number(a.status||9)-Number(b.status||9)) || (''+a.naam).localeCompare(b.naam)).forEach(v => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${v.naam}</td>
-                    <td>${v.roep}</td>
-                    <td>${statusMeta(v.status).label}</td>
-                    <td>${v.dienst || ''}</td>
-                    <td class="vta-actions">
-                      <button class="btn ghost" onclick="window.editVta('${v.roep}')">Edit</button>
-                      <button class="btn ghost" onclick="window.removeVta('${v.roep}')">Remove</button>
-                    </td>`;
-    vtaTableBody.appendChild(tr);
+function clearVtaForm(){
+  vtaNaam.value=''; vtaReden.value=''; vtaVoertuig.value=''; vtaKleur.value=''; vtaKenmerken.value=''; vtaKenteken.value=''; vtaSignalement.value=''; vtaFoto.value=''; 
+  setTimeout(()=> vtaProgress.textContent = '', 2000);
+}
+
+/* render VTA list live + search */
+function renderVtaList(filter='') {
+  db.ref('vtas').once('value').then(snap => {
+    const data = snap.val() || {};
+    const arr = Object.values(data);
+    vtaTableBody.innerHTML = '';
+    arr.sort((a,b)=> (a.naam || '').localeCompare(b.naam)).forEach(v => {
+      const txt = `${v.naam} ${v.kenteken} ${v.kenmerken}`.toLowerCase();
+      if (filter && !txt.includes(filter.toLowerCase())) return;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${v.fotoUrl ? `<img src="${v.fotoUrl}" class="thumb">` : `<div class="thumb" style="background:#001a2a;display:flex;align-items:center;justify-content:center;color:var(--muted)">No<br>foto</div>`}</td>
+        <td>${v.naam}</td>
+        <td>${v.reden}</td>
+        <td>${v.voertuig} (${v.kleur})</td>
+        <td>${v.kenteken}</td>
+        <td>${v.signalement}</td>
+        <td>
+          <button class="btn ghost" onclick="editVta('${v.id}')">Edit</button>
+          <button class="btn ghost" onclick="removeVta('${v.id}')">Remove</button>
+        </td>
+      `;
+      vtaTableBody.appendChild(tr);
+    });
   });
-});
+}
 
-/* expose edit/remove to global */
-window.editVta = async function(roep){
-  const snap = await db.ref('vtas/' + roep).once('value');
+vtaSearch.addEventListener('input', ()=> renderVtaList(vtaSearch.value));
+
+/* expose edit/remove for global use */
+window.editVta = async function(id){
+  const snap = await db.ref('vtas/' + id).once('value');
   const v = snap.val();
   if (!v) return alert('Niet gevonden');
   const nieuweNaam = prompt('Nieuwe naam', v.naam);
   if (nieuweNaam === null) return;
-  const nieuweStatus = prompt('Nieuwe status (1-8)', v.status);
-  if (nieuweStatus === null) return;
-  await db.ref('vtas/' + roep).update({naam: nieuweNaam, status: Number(nieuweStatus), timestamp: Date.now()});
-};
-window.removeVta = async function(roep){
-  if (!confirm('Verwijder ' + roep + '?')) return;
-  await db.ref('vtas/' + roep).remove();
+  const nieuweReden = prompt('Nieuwe reden', v.reden);
+  if (nieuweReden === null) return;
+  await db.ref('vtas/' + id).update({naam: nieuweNaam || 'ONBEKEND', reden: nieuweReden || 'ONBEKEND', timestamp: Date.now()});
+  renderVtaList(vtaSearch.value);
 };
 
-/* -------------------------
-   CSV export (gebruikers)
-   ------------------------- */
-downloadCSV.addEventListener('click', async () => {
+window.removeVta = async function(id){
+  if (!confirm('Verwijder VTA?')) return;
+  // remove storage folder optionally
+  await db.ref('vtas/' + id).remove();
+  renderVtaList(vtaSearch.value);
+};
+
+/* initial render */
+renderVtaList();
+
+/* helper: download gebruikers CSV */
+downloadCSV.addEventListener('click', async ()=>{
   const snap = await db.ref('gebruikers').once('value');
   const data = snap.val() || {};
-  const rows = [['Naam','Roepnummer','Status','Dienst','Tijd']];
+  const rows = [['Naam','Roep','Status','Dienst','Tijd']];
   Object.values(data).forEach(u => rows.push([u.naam, u.roep, u.status, u.dienst, new Date(u.timestamp||0).toLocaleString()]));
   const csv = rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], {type:'text/csv'});
@@ -526,10 +614,8 @@ downloadCSV.addEventListener('click', async () => {
   const a = document.createElement('a'); a.href = url; a.download = 'gebruikers.csv'; a.click(); URL.revokeObjectURL(url);
 });
 
-/* -------------------------
-   Small helpers: reset local state when DB clears
-   ------------------------- */
-db.ref('gebruikers').on('child_removed', ()=>{ /* no-op for now */ });
+/* keep VTA list live (optional: update on changes) */
+db.ref('vtas').on('value', ()=> renderVtaList(vtaSearch.value));
 
 </script>
 </body>
