@@ -3,221 +3,88 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Nederbeek — Meldkamer & VTA's • 🎄 Politie Kerst Editie</title>
+<title>Nederbeek — Kerst Meldkamer & VTA's</title>
 
 <style>
 :root{
-  --bg:#001326;                     /* Donker Politieblauw met wintertint */
-  --card:#07243d;                   /* Kaartkleur */
-  --muted:#cfe7ff;                  /* Zachter blauw */
-  --accent:#ff2f2f;                 /* Kerstrood accent */
+  --bg:#0a1b0a;           
+  --card:#123012;         
+  --muted:#c5e1a5;        
+  --accent:#d32f2f;       
   --white:#ffffff;
 }
-
-/* KERST ACHTERGROND MET LICHTE GLINSTERS */
-body{
-  margin:0;
-  font-family:Inter,Arial,Helvetica,sans-serif;
-  color:var(--white);
-  background:radial-gradient(circle at top, #00315c, #001326 60%);
-  background-attachment:fixed;
-  position:relative;
-}
-
-/* LICHTE KERST-SNEEUW */
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background-image:url('https://i.imgur.com/wQjvdyJ.png');
-  opacity:0.25;
-  pointer-events:none;
-}
-
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--white)}
 .container{max-width:1200px;margin:18px auto;padding:18px}
 .header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-
-.title h1{
-  margin:0;
-  font-size:20px;
-  color:#fff;
-  text-shadow:0 0 8px #ff4d4d;
-}
+.title h1{margin:0;font-size:20px}
 .title .sub{color:var(--muted);font-size:13px;margin-top:4px}
-
 .controls{display:flex;gap:8px;align-items:center}
-
-.btn{
-  background:var(--accent);
-  color:#fff;
-  padding:8px 12px;
-  border-radius:8px;
-  border:none;
-  cursor:pointer;
-  font-weight:700;
-  box-shadow:0 0 8px rgba(255,0,0,0.4);
-}
-
-.btn.ghost{
-  background:transparent;
-  border:1px solid rgba(255,255,255,0.2);
-  color:var(--white);
-}
-
+.btn{background:var(--accent);color:var(--white);padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--white)}
 .grid{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-top:16px}
 @media(max-width:980px){.grid{grid-template-columns:1fr}}
-
-.card{
-  background:var(--card);
-  padding:12px;
-  border-radius:12px;
-  box-shadow:0 6px 16px rgba(0,0,0,0.6);
-  border:1px solid rgba(255,255,255,0.03);
-}
-
-/* POLITIE-BLAUWE RAND + KERST GLANS */
-.card h3{
-  margin:0;
-  padding-bottom:6px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  color:#fff;
-  text-shadow:0 0 6px #2fa8ff;
-}
-
-/* Input velden */
-input,select,textarea{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.12);
-  background:rgba(255,255,255,0.05);
-  color:var(--white);
-}
-
+.card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,0.5)}
+.field{margin-top:10px}
+input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--white)}
 textarea{min-height:80px;resize:vertical}
-
 .select-status{font-weight:700}
-
-/* NOODKNOP: politie rood + kerst glow */
-.huge{
-  font-size:18px;
-  padding:14px;
-  border-radius:12px;
-}
-.nood{
-  background:linear-gradient(180deg,#ff2f2f,#b30000);
-  color:white;
-  border:none;
-  box-shadow:0 0 14px #ff0000;
-}
-
+.huge{font-size:18px;padding:14px;border-radius:12px}
+.nood{background:linear-gradient(180deg,#ff0000,#a50000);color:white;border:none}
 .small{color:var(--muted);font-size:13px}
-
 .ovd-list{max-height:420px;overflow:auto;margin-top:10px}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:8px;
-  background:#031726;
-  border:1px solid rgba(255,255,255,0.08);
-}
-
-.status-badge{
-  min-width:120px;
-  text-align:center;
-  padding:8px;
-  border-radius:8px;
-  font-weight:700;
-}
-
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;margin-bottom:8px}
+.row .left{display:flex;gap:12px;align-items:center}
+.status-badge{min-width:120px;text-align:center;padding:8px;border-radius:8px;font-weight:700}
 .ts{font-size:12px;color:var(--muted)}
-
 .nav{display:flex;gap:8px;align-items:center;margin-left:8px}
-.link{
-  color:var(--muted);
-  text-decoration:none;
-  padding:8px;
-  border-radius:8px;
-}
-.link.active{
-  background:rgba(255,255,255,0.08);
-  color:var(--white);
-  box-shadow:0 0 6px rgba(255,255,255,0.1);
-}
+.link{color:var(--muted);text-decoration:none;padding:8px;border-radius:8px}
+.link.active{background:rgba(255,255,255,0.04);color:var(--white)}
+.footer{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
 
-.footer{
-  margin-top:12px;
-  color:var(--muted);
-  font-size:13px;
-  text-align:center;
-}
-
-/* NOODALARM: rode kerst-flikker animatie */
 #alertOverlay{
-  position:fixed;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:99999;
-  background:linear-gradient(180deg,rgba(200,0,0,0.95),rgba(120,0,0,0.95));
-  color:white;
-  text-align:center;
-  padding:20px;
-  cursor:pointer;
-  animation:pulse 0.7s infinite;
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:99999;
+  background:linear-gradient(180deg,rgba(255,0,0,0.95),rgba(180,0,0,0.95));
+  color:white;text-align:center;padding:20px;cursor:pointer;
+  animation: pulse 0.8s infinite;
 }
-
-@keyframes pulse{
-  0%{opacity:1}
-  50%{opacity:0.35}
-  100%{opacity:1}
-}
-
-#alertOverlay h2{
-  font-size:48px;
-  margin:8px;
-  text-shadow:0 0 12px #ff0000;
-}
-
+@keyframes pulse {0%{opacity:1}50%{opacity:0.2}100%{opacity:1}}
+#alertOverlay h2{font-size:48px;margin:8px}
 #alertOverlay p{font-size:20px;margin:6px}
 
-/* TABEL / VTA */
 .table{width:100%;border-collapse:collapse}
-.table th,.table td{
-  padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.06);
-  text-align:left;
-}
-
-.thumb{
-  width:80px;
-  height:60px;
-  object-fit:cover;
-  border-radius:6px;
-  border:1px solid rgba(255,255,255,0.12);
-}
-
+.table th,.table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
+.thumb{width:80px;height:60px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.06)}
 .form-inline{display:flex;gap:8px}
-.form-inline>*{flex:1}
+.form-inline > *{flex:1}
+
+.snowflake{
+  position:fixed;
+  top:-10px;
+  color:#fff;
+  font-size:10px;
+  user-select:none;
+  z-index:9999;
+  animation: fall linear infinite;
+}
+@keyframes fall{
+  0%{transform:translateY(0) rotate(0deg);}
+  100%{transform:translateY(100vh) rotate(360deg);}
+}
 
 @media(max-width:760px){
   .form-inline{flex-direction:column}
   .grid{grid-template-columns:1fr}
 }
-
 </style>
 </head>
 <body>
+
 <div class="container">
   <div class="header">
     <div class="title">
-      <h1>Nederbeek — Meldkamer 🎄</h1>
-      <div class="sub">Realtime statussen • Noodknop • VTA beheer • Kerst Editie</div>
+      <h1>🎄 Nederbeek — Kerst Meldkamer</h1>
+      <div class="sub">Realtime statussen • Noodknop • VTA beheer</div>
     </div>
 
     <div class="controls">
@@ -229,7 +96,6 @@ textarea{min-height:80px;resize:vertical}
     </div>
   </div>
 
-  <!-- DASHBOARD content -->
   <div id="pageDashboard" class="page">
     <div class="grid">
       <div>
@@ -247,9 +113,8 @@ textarea{min-height:80px;resize:vertical}
         <div id="controlCard" class="card" style="display:none;margin-top:12px">
           <h3>Controlepaneel</h3>
           <div id="currentUser" class="small" style="margin-bottom:8px"></div>
-
           <div class="field">
-            <label class="small">Status (wijzigt meteen bij select)</label>
+            <label class="small">Status</label>
             <select id="statusSelect" class="select-status">
               <option value="1">1 — Inzetbaar, vrij</option>
               <option value="2">2 — Aanrijdend naar de melding</option>
@@ -261,19 +126,15 @@ textarea{min-height:80px;resize:vertical}
               <option value="8">8 — Uitdienst</option>
             </select>
           </div>
-
           <div style="display:flex;gap:8px;margin-top:10px">
             <button id="btnToggleDienst" class="btn ghost">In / Uit dienst</button>
-            <button id="btnSetStatus" class="btn" style="display:none">Opslaan</button>
           </div>
-
           <div style="margin-top:14px">
             <button id="btnNood" class="huge nood">🚨 NOODKNOP</button>
           </div>
-
           <div style="margin-top:12px">
-            <button id="btnResetNood" class="btn ghost">Reset nood (OVD)</button>
-            <button id="btnResetDienst" class="btn ghost">Reset dienst (wis alle gebruikers)</button>
+            <button id="btnResetNood" class="btn ghost">Reset nood</button>
+            <button id="btnResetDienst" class="btn ghost">Reset dienst</button>
           </div>
         </div>
 
@@ -283,7 +144,6 @@ textarea{min-height:80px;resize:vertical}
         </div>
       </div>
 
-      <!-- RIGHT column -->
       <aside>
         <div class="card">
           <h3>OVD / Live overzicht</h3>
@@ -303,39 +163,32 @@ textarea{min-height:80px;resize:vertical}
     </div>
   </div>
 
-  <!-- VTAs page (tab) -->
   <div id="pageVtas" class="page" style="display:none">
     <div class="card">
-      <h3>VTA — Verdachten / Personen</h3>
+      <h3>🎄 VTA — Verdachten / Personen</h3>
       <div class="small">Vul elk veld in; als je iets niet weet wordt automatisch <strong>ONBEKEND</strong> ingevuld.</div>
 
       <div style="margin-top:12px" class="card">
         <h4>Nieuw VTA formulier</h4>
-
         <div class="form-inline" style="margin-top:10px">
           <input id="vtaNaam" placeholder="Naam">
           <input id="vtaReden" placeholder="Redenen/omschrijven">
         </div>
-
         <div class="form-inline" style="margin-top:10px">
           <input id="vtaVoertuig" placeholder="Voertuig (soort)">
           <input id="vtaKleur" placeholder="Kleur">
         </div>
-
         <div class="form-inline" style="margin-top:10px">
           <input id="vtaKenmerken" placeholder="Kenmerken">
           <input id="vtaKenteken" placeholder="Kenteken">
         </div>
-
         <div style="margin-top:10px">
           <textarea id="vtaSignalement" placeholder="Signalement (beschrijving)"></textarea>
         </div>
-
         <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
           <input type="file" id="vtaFoto" accept="image/*">
           <button id="btnAddVta" class="btn">Opslaan VTA</button>
         </div>
-
         <div id="vtaProgress" class="small" style="margin-top:8px"></div>
       </div>
 
@@ -353,13 +206,12 @@ textarea{min-height:80px;resize:vertical}
     </div>
   </div>
 
-  <div class="footer">© Nederbeek — Meldkamer 🎄 Kerst Editie</div>
+  <div class="footer">© Nederbeek — Kerst Meldkamer</div>
 </div>
 
-<!-- ALERT OVERLAY -->
 <div id="alertOverlay" title="Klik om te resetten">
   <div>
-    <h2>🚨 NOODALARM 🚨</h2>
+    <h2>🚨 NOODALARM 🎄</h2>
     <p id="alertDetail">—</p>
     <div style="margin-top:18px">
       <button id="closeAlert" class="btn" style="background:#fff;color:#001b35">Stop alarm</button>
@@ -367,25 +219,23 @@ textarea{min-height:80px;resize:vertical}
   </div>
 </div>
 
-<!-- AUDIO -->
 <audio id="alarmAudio" loop preload="auto">
   <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
 </audio>
 
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <script>
-/* ==== Firebase Config ==== */
+// === Firebase config ===
 const firebaseConfig = {
   apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
   authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
   databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/",
   projectId: "politie-nederbeek-fd6ff",
-  storageBucket: "politie-nederbeek-fd6ff.firebasestorage.app",
+  storageBucket: "politie-nederbeek-fd6ff.appspot.com",
   messagingSenderId: "49112852872",
   appId: "1:49112852872:web:9b235d5e5dfd2c89aaf23d"
 };
@@ -393,236 +243,171 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const storage = firebase.storage();
 const auth = firebase.auth();
-/* Helpers */
-function escape(s){return String(s||"").trim()||"ONBEKEND"}
-function ts(){return new Date().toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}
 
-/* ===== LOGIN ===== */
-const inputName=document.getElementById("inputName")
-const inputRoep=document.getElementById("inputRoep")
-const btnLogin=document.getElementById("btnLogin")
-const btnLogout=document.getElementById("btnLogout")
-const loginCard=document.getElementById("loginCard")
-const controlCard=document.getElementById("controlCard")
-const currentUser=document.getElementById("currentUser")
+// === DOM refs ===
+const navDashboard=document.getElementById('navDashboard');
+const navVtas=document.getElementById('navVtas');
+const pageDashboard=document.getElementById('pageDashboard');
+const pageVtas=document.getElementById('pageVtas');
+const enableSound=document.getElementById('enableSound');
+const alarmAudio=document.getElementById('alarmAudio');
+const alertOverlay=document.getElementById('alertOverlay');
+const alertDetail=document.getElementById('alertDetail');
+const closeAlert=document.getElementById('closeAlert');
+const inputName=document.getElementById('inputName');
+const inputRoep=document.getElementById('inputRoep');
+const btnLogin=document.getElementById('btnLogin');
+const btnLogout=document.getElementById('btnLogout');
+const loginCard=document.getElementById('loginCard');
+const controlCard=document.getElementById('controlCard');
+const currentUserText=document.getElementById('currentUser');
+const statusSelect=document.getElementById('statusSelect');
+const btnNood=document.getElementById('btnNood');
+const btnResetNood=document.getElementById('btnResetNood');
+const btnResetDienst=document.getElementById('btnResetDienst');
+const ovdList=document.getElementById('ovdList');
+const openVta=document.getElementById('openVta');
+const downloadCSV=document.getElementById('downloadCSV');
+const vtaNaam=document.getElementById('vtaNaam');
+const vtaReden=document.getElementById('vtaReden');
+const vtaVoertuig=document.getElementById('vtaVoertuig');
+const vtaKleur=document.getElementById('vtaKleur');
+const vtaKenmerken=document.getElementById('vtaKenmerken');
+const vtaKenteken=document.getElementById('vtaKenteken');
+const vtaSignalement=document.getElementById('vtaSignalement');
+const vtaFoto=document.getElementById('vtaFoto');
+const btnAddVta=document.getElementById('btnAddVta');
+const vtaProgress=document.getElementById('vtaProgress');
+const vtaTableBody=document.getElementById('vtaTableBody');
+const vtaSearch=document.getElementById('vtaSearch');
 
-let userKey=null
+let current=null, soundEnabled=false;
 
-btnLogin.onclick=()=>{
-  const naam=escape(inputName.value)
-  const roep=escape(inputRoep.value)
-  if(!naam||!roep)return alert("Vul naam en roepnummer in.")
-  userKey=roep
-  db.ref("gebruikers/"+userKey).set({
-    naam,roep,status:"1",tijd:ts()
-  })
-  controlCard.style.display="block"
-  btnLogout.style.display="inline-block"
-  loginCard.style.display="none"
-  currentUser.textContent=`Ingelogd als ${naam} (${roep})`
+// === Navigation ===
+function showPage(page){
+  navDashboard.classList.remove('active');
+  navVtas.classList.remove('active');
+  pageDashboard.style.display='none';
+  pageVtas.style.display='none';
+  if(page==='vtas'){navVtas.classList.add('active'); pageVtas.style.display='block';} 
+  else {navDashboard.classList.add('active'); pageDashboard.style.display='block';}
 }
+window.addEventListener('hashchange', ()=>showPage(location.hash.replace('#','')||'dashboard'));
+navDashboard.addEventListener('click',()=>location.hash='dashboard');
+navVtas.addEventListener('click',()=>location.hash='vtas');
+openVta.addEventListener('click',()=>location.hash='vtas');
+if(!location.hash) location.hash='#dashboard';
+showPage(location.hash.replace('#','')||'dashboard');
 
-btnLogout.onclick=()=>{
-  if(!userKey)return
-  db.ref("gebruikers/"+userKey).remove()
-  userKey=null
-  controlCard.style.display="none"
-  loginCard.style.display="block"
-  btnLogout.style.display="none"
+// === Enable sound ===
+enableSound.addEventListener('click',()=>{
+  alarmAudio.play().then(()=>{alarmAudio.pause(); alarmAudio.currentTime=0; soundEnabled=true; enableSound.style.display='none'; alert('Geluid ingeschakeld.');}).catch(()=>{alert('Autoplay geblokkeerd — klik nogmaals Enable sound.');});
+});
+
+// === Login / Logout ===
+btnLogin.addEventListener('click', async ()=>{
+  const naam=inputName.value.trim(); const roep=inputRoep.value.trim();
+  if(!naam||!roep) return alert('Vul naam en roepnummer in');
+  try{
+    await auth.signInAnonymously();
+    current={naam,roep};
+    await db.ref('gebruikers/'+roep).update({naam,roep,status:1,dienst:'in',timestamp:Date.now()});
+    loginCard.style.display='none'; controlCard.style.display='block'; btnLogout.style.display='inline-block';
+    currentUserText.innerText=`${naam} (${roep})`;
+    localStorage.setItem('nb_user',JSON.stringify(current));
+  }catch(e){console.error(e); alert('Login mislukt: '+e.message);}
+});
+btnLogout.addEventListener('click', async ()=>{
+  if(!current) return;
+  await db.ref('gebruikers/'+current.roep).remove().catch(()=>{});
+  current=null; loginCard.style.display='block'; controlCard.style.display='none'; btnLogout.style.display='none';
+  localStorage.removeItem('nb_user');
+});
+
+// === Restore local user ===
+(function(){const s=localStorage.getItem('nb_user'); if(s){current=JSON.parse(s); loginCard.style.display='none'; controlCard.style.display='block'; btnLogout.style.display='inline-block'; currentUserText.innerText=`${current.naam} (${current.roep})`;}})();
+
+// === Status change ===
+statusSelect.addEventListener('change',()=>{if(!current) return; db.ref('gebruikers/'+current.roep).update({status:Number(statusSelect.value),timestamp:Date.now()});});
+
+// === Noodknop ===
+btnNood.addEventListener('click',()=>{db.ref('nood/alarm').set({active:true,who:current?current.naam:'onbekend',timestamp:Date.now()});});
+btnResetNood.addEventListener('click',()=>{db.ref('nood/alarm').set({active:false});});
+btnResetDienst.addEventListener('click',()=>{db.ref('gebruikers').once('value',snap=>{snap.forEach(u=>u.ref.update({status:1}));});});
+
+// === Alert overlay ===
+closeAlert.addEventListener('click',()=>{alertOverlay.style.display='none'; alarmAudio.pause(); alarmAudio.currentTime=0;});
+
+// === Listen users ===
+db.ref('gebruikers').on('value',snap=>{
+  ovdList.innerHTML=''; const arr=[];
+  snap.forEach(s=>arr.push(s.val()));
+  arr.sort((a,b)=>a.status-b.status);
+  arr.forEach(u=>{
+    const row=document.createElement('div'); row.className='row';
+    row.innerHTML=`<div class="left"><strong>${u.naam}</strong> (${u.roep})</div><div class="status-badge">${u.status}</div>`;
+    ovdList.appendChild(row);
+  });
+});
+
+// === Listen alarm ===
+db.ref('nood/alarm').on('value',snap=>{
+  const val=snap.val();
+  if(val&&val.active){alertDetail.innerText='Gerapporteerd door: '+val.who; alertOverlay.style.display='flex'; if(soundEnabled) alarmAudio.play();} else {alertOverlay.style.display='none'; alarmAudio.pause(); alarmAudio.currentTime=0;}
+});
+
+// === VTA management ===
+async function refreshVtas(){
+  vtaTableBody.innerHTML='';
+  const snap=await db.ref('vtas').once('value'); snap.forEach(s=>{
+    const v=s.val();
+    const tr=document.createElement('tr');
+    const img=v.foto||'';
+    tr.innerHTML=`<td>${img?`<img src="${img}" class="thumb">`:'-'}</td><td>${v.naam}</td><td>${v.reden}</td><td>${v.voertuig}</td><td>${v.kenteken}</td><td>${v.signalement}</td><td><button class="btn ghost" onclick="deleteVta('${s.key}')">Verwijder</button></td>`;
+    vtaTableBody.appendChild(tr);
+  });
 }
-
-/* ===== STATUS ===== */
-const statusSelect=document.getElementById("statusSelect")
-statusSelect.onchange=()=>{
-  if(!userKey)return
-  db.ref("gebruikers/"+userKey).update({
-    status:statusSelect.value,tijd:ts()
-  })
-}
-
-/* ===== DIENST ===== */
-const btnToggleDienst=document.getElementById("btnToggleDienst")
-btnToggleDienst.onclick=()=>{
-  if(!userKey)return
-  db.ref("gebruikers/"+userKey).once("value").then(s=>{
-    if(!s.exists())return
-    const st=s.val().status
-    const nieuw=(st==="8")?"1":"8"
-    db.ref("gebruikers/"+userKey).update({status:nieuw,tijd:ts()})
-  })
-}
-
-/* RESET DIENST */
-document.getElementById("btnResetDienst").onclick=()=>{
-  if(!confirm("Weet je zeker dat je ALLE gebruikers wilt verwijderen?"))return
-  db.ref("gebruikers").remove()
-}
-
-/* ===== OVD LIVE LIJST ===== */
-const ovdList=document.getElementById("ovdList")
-db.ref("gebruikers").on("value",snap=>{
-  ovdList.innerHTML=""
-  const arr=[]
-  snap.forEach(c=>arr.push(c.val()))
-  arr.sort((a,b)=>Number(a.status)-Number(b.status))
-  for(const x of arr){
-    const row=document.createElement("div")
-    row.className="row"
-    row.innerHTML=`
-      <div>
-        <div><strong>${x.naam}</strong> (${x.roep})</div>
-        <div class="ts">${x.tijd}</div>
-      </div>
-      <div class="status-badge">Status ${x.status}</div>
-    `
-    ovdList.appendChild(row)
+btnAddVta.addEventListener('click', async ()=>{
+  const naam=vtaNaam.value||'ONBEKEND';
+  const reden=vtaReden.value||'ONBEKEND';
+  const voertuig=vtaVoertuig.value||'ONBEKEND';
+  const kleur=vtaKleur.value||'ONBEKEND';
+  const kenmerken=vtaKenmerken.value||'ONBEKEND';
+  const kenteken=vtaKenteken.value||'ONBEKEND';
+  const signalement=vtaSignalement.value||'ONBEKEND';
+  let fotoUrl='';
+  if(vtaFoto.files[0]){
+    const file=vtaFoto.files[0];
+    const ref=storage.ref('vtas/'+Date.now()+'_'+file.name);
+    const task=ref.put(file);
+    task.on('state_changed',snap=>{const p=(snap.bytesTransferred/snap.totalBytes*100).toFixed(0); vtaProgress.innerText=`Upload: ${p}%`;});
+    await task; fotoUrl=await ref.getDownloadURL(); vtaProgress.innerText='Upload compleet';
   }
-})
+  await db.ref('vtas').push({naam,reden,voertuig,kleur,kenmerken,kenteken,signalement,foto:fotoUrl,timestamp:Date.now()});
+  vtaNaam.value=''; vtaReden.value=''; vtaVoertuig.value=''; vtaKleur.value=''; vtaKenmerken.value=''; vtaKenteken.value=''; vtaSignalement.value=''; vtaFoto.value='';
+  refreshVtas();
+});
+window.deleteVta=async function(key){if(confirm('Verwijder deze VTA?')){await db.ref('vtas/'+key).remove(); refreshVtas();}}
+vtaSearch.addEventListener('input',()=>{const q=vtaSearch.value.toLowerCase(); Array.from(vtaTableBody.children).forEach(tr=>{tr.style.display=tr.innerText.toLowerCase().includes(q)?'':'none';});});
+refreshVtas();
 
-/* ===== NOODALARM ===== */
-const btnNood=document.getElementById("btnNood")
-const btnResetNood=document.getElementById("btnResetNood")
-const alertOverlay=document.getElementById("alertOverlay")
-const alertDetail=document.getElementById("alertDetail")
-const alarmAudio=document.getElementById("alarmAudio")
+// === CSV download ===
+downloadCSV.addEventListener('click', async ()=>{
+  const snap=await db.ref('gebruikers').once('value'); let csv='Naam,Roepnummer,Status,Dienst\n';
+  snap.forEach(s=>{const u=s.val(); csv+=`${u.naam},${u.roep},${u.status},${u.dienst}\n`;});
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='gebruikers.csv'; a.click();
+});
 
-let soundOn=false
-document.getElementById("enableSound").onclick=()=>{soundOn=true}
-
-btnNood.onclick=()=>{
-  if(!userKey)return
-  db.ref("alarm").set({
-    actief:true,
-    door:userKey,
-    tijd:ts()
-  })
+// === Sneeuw effect ===
+for(let i=0;i<50;i++){
+  const flake=document.createElement('div');
+  flake.className='snowflake';
+  flake.style.left=Math.random()*100+'vw';
+  flake.style.animationDuration=2+Math.random()*5+'s';
+  flake.style.fontSize=8+Math.random()*10+'px';
+  flake.textContent='❄';
+  document.body.appendChild(flake);
 }
-
-btnResetNood.onclick=()=>db.ref("alarm").remove()
-
-document.getElementById("closeAlert").onclick=()=>db.ref("alarm").remove()
-
-db.ref("alarm").on("value",snap=>{
-  if(snap.exists()){
-    const d=snap.val()
-    alertDetail.textContent=`Door: ${d.door} – ${d.tijd}`
-    alertOverlay.style.display="flex"
-    if(soundOn)alarmAudio.play()
-  }else{
-    alertOverlay.style.display="none"
-    alarmAudio.pause()
-    alarmAudio.currentTime=0
-  }
-})
-
-alertOverlay.onclick=()=>db.ref("alarm").remove()
-
-/* ===== NAVIGATIE ===== */
-const navDashboard=document.getElementById("navDashboard")
-const navVtas=document.getElementById("navVtas")
-const pageDashboard=document.getElementById("pageDashboard")
-const pageVtas=document.getElementById("pageVtas")
-
-function showPage(p){
-  pageDashboard.style.display=(p==="dash")?"block":"none"
-  pageVtas.style.display=(p==="vta")?"block":"none"
-  navDashboard.classList.toggle("active",p==="dash")
-  navVtas.classList.toggle("active",p==="vta")
-}
-navDashboard.onclick=()=>showPage("dash")
-navVtas.onclick=()=>showPage("vta")
-document.getElementById("openVta").onclick=()=>showPage("vta")
-
-/* ===== CSV EXPORT ===== */
-document.getElementById("downloadCSV").onclick=()=>{
-  db.ref("gebruikers").once("value").then(s=>{
-    let csv="naam,roep,status,tijd\n"
-    s.forEach(v=>{
-      const x=v.val()
-      csv+=`${x.naam},${x.roep},${x.status},${x.tijd}\n`
-    })
-    const blob=new Blob([csv],{type:"text/csv"})
-    const url=URL.createObjectURL(blob)
-    const a=document.createElement("a")
-    a.href=url
-    a.download="gebruikers.csv"
-    a.click()
-  })
-}
-
-/* ===== VTAs ===== */
-const vtaTableBody=document.getElementById("vtaTableBody")
-const vtaSearch=document.getElementById("vtaSearch")
-
-function renderVtas(list){
-  vtaTableBody.innerHTML=""
-  list.forEach(x=>{
-    const tr=document.createElement("tr")
-    tr.innerHTML=`
-      <td><img src="${x.foto}" class="thumb"></td>
-      <td>${x.naam}</td>
-      <td>${x.reden}</td>
-      <td>${x.voertuig} – ${x.kleur}</td>
-      <td>${x.kenteken}</td>
-      <td>${x.signalement}</td>
-      <td><button data-id="${x.id}" class="btn ghost delVta">Verwijder</button></td>
-    `
-    vtaTableBody.appendChild(tr)
-  })
-}
-
-function loadVtas(){
-  db.ref("vtas").on("value",snap=>{
-    const arr=[]
-    snap.forEach(c=>arr.push({...c.val(),id:c.key}))
-    const q=vtaSearch.value.toLowerCase()
-    const filtered=arr.filter(x=>
-      x.naam.toLowerCase().includes(q)||
-      x.kenteken.toLowerCase().includes(q)||
-      x.kenmerken.toLowerCase().includes(q)
-    )
-    renderVtas(filtered)
-  })
-}
-loadVtas()
-
-vtaSearch.oninput=loadVtas
-
-/* NIEUWE VTA OPSLAAN */
-document.getElementById("btnAddVta").onclick=async()=>{
-  const naam=escape(document.getElementById("vtaNaam").value)
-  const reden=escape(document.getElementById("vtaReden").value)
-  const voertuig=escape(document.getElementById("vtaVoertuig").value)
-  const kleur=escape(document.getElementById("vtaKleur").value)
-  const kenmerken=escape(document.getElementById("vtaKenmerken").value)
-  const kenteken=escape(document.getElementById("vtaKenteken").value)
-  const signalement=escape(document.getElementById("vtaSignalement").value)
-  const file=document.getElementById("vtaFoto").files[0]
-
-  if(!file)return alert("Foto is verplicht!")
-
-  const id=Date.now()
-  document.getElementById("vtaProgress").textContent="Uploaden..."
-
-  const ref=storage.ref("vta_fotos/"+id)
-  await ref.put(file)
-  const url=await ref.getDownloadURL()
-
-  await db.ref("vtas/"+id).set({
-    naam,reden,voertuig,kleur,kenmerken,kenteken,signalement,foto:url
-  })
-
-  document.getElementById("vtaProgress").textContent="✔️ Opgeslagen"
-  setTimeout(()=>document.getElementById("vtaProgress").textContent="",2000)
-}
-
-/* VERWIJDER VTA */
-document.addEventListener("click",e=>{
-  if(e.target.classList.contains("delVta")){
-    const id=e.target.dataset.id
-    if(confirm("Verwijderen?"))db.ref("vtas/"+id).remove()
-  }
-})
 </script>
 
 </body>
