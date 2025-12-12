@@ -227,7 +227,7 @@ textarea{min-height:80px;resize:vertical}
   <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
 </audio>
 
-<!-- FIREBASE v8 CDN (compat voor Pages) -->
+<!-- FIREBASE v8 CDN -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -235,8 +235,8 @@ textarea{min-height:80px;resize:vertical}
 
 <script>
 /* ======================
-   Firebase config (jouw project)
-   ====================== */
+   Firebase config
+====================== */
 const firebaseConfig = {
   apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
   authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
@@ -253,7 +253,7 @@ const auth = firebase.auth();
 
 /* ======================
    DOM refs
-   ====================== */
+====================== */
 const navDashboard = document.getElementById('navDashboard');
 const navVtas = document.getElementById('navVtas');
 const pageDashboard = document.getElementById('pageDashboard');
@@ -275,6 +275,7 @@ const statusSelect = document.getElementById('statusSelect');
 const btnNood = document.getElementById('btnNood');
 const btnResetNood = document.getElementById('btnResetNood');
 const btnResetDienst = document.getElementById('btnResetDienst');
+const btnToggleDienst = document.getElementById('btnToggleDienst');
 const ovdList = document.getElementById('ovdList');
 const openVta = document.getElementById('openVta');
 const downloadCSV = document.getElementById('downloadCSV');
@@ -296,14 +297,14 @@ let current = null;
 let soundEnabled = false;
 
 /* -------------------------
-   Navigation (hash)
+   Navigation
 --------------------------*/
 function showPage(page){
   navDashboard.classList.remove('active');
   navVtas.classList.remove('active');
   pageDashboard.style.display = 'none';
   pageVtas.style.display = 'none';
-  if (page === 'vtas') {
+  if(page === 'vtas'){
     navVtas.classList.add('active');
     pageVtas.style.display = 'block';
   } else {
@@ -311,43 +312,44 @@ function showPage(page){
     pageDashboard.style.display = 'block';
   }
 }
-window.addEventListener('hashchange', ()=> showPage(location.hash.replace('#','') || 'dashboard'));
-navDashboard.addEventListener('click', ()=> location.hash='dashboard');
-navVtas.addEventListener('click', ()=> location.hash='vtas');
-openVta.addEventListener('click', ()=> location.hash='vtas');
-if (!location.hash) location.hash='#dashboard';
+window.addEventListener('hashchange', ()=>showPage(location.hash.replace('#','') || 'dashboard'));
+navDashboard.addEventListener('click', ()=>location.hash='dashboard');
+navVtas.addEventListener('click', ()=>location.hash='vtas');
+openVta.addEventListener('click', ()=>location.hash='vtas');
+if(!location.hash) location.hash='#dashboard';
 showPage(location.hash.replace('#','') || 'dashboard');
 
 /* -------------------------
-   Enable sound helper (user gesture)
+   Enable sound
 --------------------------*/
 enableSound.addEventListener('click', () => {
-  alarmAudio.play().then(()=>{ alarmAudio.pause(); alarmAudio.currentTime = 0; soundEnabled=true; enableSound.style.display='none'; alert('Geluid ingeschakeld voor deze tab.'); })
+  alarmAudio.play().then(()=>{ alarmAudio.pause(); alarmAudio.currentTime=0; soundEnabled=true; enableSound.style.display='none'; alert('Geluid ingeschakeld.'); })
   .catch(()=>{ alert('Autoplay geblokkeerd — klik nogmaals Enable sound.'); });
 });
 
 /* -------------------------
    LOGIN
 --------------------------*/
-btnLogin.addEventListener('click', async () => {
+btnLogin.addEventListener('click', async ()=>{
   const naam = inputName.value.trim();
   const roep = inputRoep.value.trim();
-  if (!naam || !roep) return alert('Vul naam en roepnummer in');
+  if(!naam||!roep) return alert('Vul naam en roepnummer in');
+
   try {
     await auth.signInAnonymously();
     current = {naam, roep};
-    await db.ref('gebruikers/' + roep).update({naam, roep, status:1, dienst:'in', timestamp: Date.now()});
-    loginCard.style.display = 'none';
-    controlCard.style.display = 'block';
-    btnLogout.style.display = 'inline-block';
-    currentUserText.innerText = ${naam} (${roep});
+    await db.ref('gebruikers/'+roep).update({naam, roep, status:1, dienst:'in', timestamp:Date.now()});
+    loginCard.style.display='none';
+    controlCard.style.display='block';
+    btnLogout.style.display='inline-block';
+    currentUserText.innerText = `${naam} (${roep})`;
     localStorage.setItem('nb_user', JSON.stringify(current));
   } catch(e){ console.error(e); alert('Login mislukt: '+e.message); }
 });
 
-btnLogout.addEventListener('click', async () => {
-  if (!current) return;
-  await db.ref('gebruikers/' + current.roep).remove().catch(()=>{});
+btnLogout.addEventListener('click', async ()=>{
+  if(!current) return;
+  await db.ref('gebruikers/'+current.roep).remove().catch(()=>{});
   current=null;
   loginCard.style.display='block';
   controlCard.style.display='none';
@@ -356,10 +358,19 @@ btnLogout.addEventListener('click', async () => {
 });
 
 /* restore local */
-(function restore(){ const s = localStorage.getItem('nb_user'); if (s) { try { const u = JSON.parse(s); inputName.value=u.naam; inputRoep.value=u.roep; } catch(e){} } })();
+(function restore(){ 
+  const s = localStorage.getItem('nb_user'); 
+  if(s){ 
+    try{ 
+      const u = JSON.parse(s); 
+      inputName.value=u.naam; 
+      inputRoep.value=u.roep; 
+    } catch(e){} 
+  } 
+})();
 
 /* -------------------------
-   Status metadata
+   Status helper
 --------------------------*/
 function statusMeta(s){
   switch(Number(s)){
@@ -376,95 +387,90 @@ function statusMeta(s){
 }
 
 /* -------------------------
-   Update status instantly when select changes
+   Status change
 --------------------------*/
-statusSelect.addEventListener('change', async () => {
-  if (!current) return alert('Niet ingelogd');
+statusSelect.addEventListener('change', async ()=>{
+  if(!current) return alert('Niet ingelogd');
   const s = Number(statusSelect.value);
-  if (s === 8) {
-    // uitdienst = remove from DB
-    await db.ref('gebruikers/' + current.roep).remove();
-    // reflect locally
+  if(s===8){
+    await db.ref('gebruikers/'+current.roep).remove();
     controlCard.style.display='none';
     loginCard.style.display='block';
     btnLogout.style.display='none';
     localStorage.removeItem('nb_user');
-    current = null;
+    current=null;
     return;
   }
-  await db.ref('gebruikers/' + current.roep).update({status:s, timestamp: Date.now()});
+  await db.ref('gebruikers/'+current.roep).update({status:s, timestamp:Date.now()});
 });
 
-/* Toggle dienst (if set to uit -> remove) */
-btnToggleDienst.addEventListener('click', async () => {
-  if (!current) return alert('Niet ingelogd');
-  const snap = await db.ref('gebruikers/' + current.roep).once('value');
-  const data = snap.val() || {};
-  const newDienst = data.dienst === 'in' ? 'uit' : 'in';
-  if (newDienst === 'uit') {
-    await db.ref('gebruikers/' + current.roep).remove();
+btnToggleDienst.addEventListener('click', async ()=>{
+  if(!current) return alert('Niet ingelogd');
+  const snap = await db.ref('gebruikers/'+current.roep).once('value');
+  const data = snap.val()||{};
+  const newDienst = data.dienst==='in' ? 'uit' : 'in';
+  if(newDienst==='uit'){
+    await db.ref('gebruikers/'+current.roep).remove();
     controlCard.style.display='none';
     loginCard.style.display='block';
     btnLogout.style.display='none';
-    current = null;
+    current=null;
     localStorage.removeItem('nb_user');
   } else {
-    await db.ref('gebruikers/' + current.roep).update({dienst:'in', timestamp: Date.now()});
+    await db.ref('gebruikers/'+current.roep).update({dienst:'in', timestamp:Date.now()});
   }
 });
 
 /* -------------------------
    Noodknop & alert
 --------------------------*/
-btnNood.addEventListener('click', async () => {
-  if (!current) return alert('Niet ingelogd');
-  await db.ref('noodmelding').set({actief:true, door: current.roep, tijd: Date.now()});
-  if (soundEnabled) try{ await alarmAudio.play(); }catch(e){}
+btnNood.addEventListener('click', async ()=>{
+  if(!current) return alert('Niet ingelogd');
+  await db.ref('noodmelding').set({actief:true, door:current.roep, tijd:Date.now()});
+  if(soundEnabled) try{ await alarmAudio.play(); }catch(e){}
 });
 
-/* reset */
-btnResetNood.addEventListener('click', async ()=> {
-  if (!confirm('Reset noodmelding?')) return;
+btnResetNood.addEventListener('click', async ()=>{
+  if(!confirm('Reset noodmelding?')) return;
   await db.ref('noodmelding').set({actief:false, door:'', tijd:0});
 });
-btnResetDienst.addEventListener('click', async ()=> {
-  if (!confirm('Weet je het zeker? Dit verwijdert alle gebruikers.')) return;
+
+btnResetDienst.addEventListener('click', async ()=>{
+  if(!confirm('Weet je het zeker? Dit verwijdert alle gebruikers.')) return;
   await db.ref('gebruikers').remove();
   alert('Dienst gereset');
 });
 
-/* alert overlay handlers */
-closeAlert.addEventListener('click', async (e)=>{ e.stopPropagation(); await db.ref('noodmelding').set({actief:false, door:'', tijd:0}); });
+closeAlert.addEventListener('click', async e=>{ e.stopPropagation(); await db.ref('noodmelding').set({actief:false, door:'', tijd:0}); });
 alertOverlay.addEventListener('click', async ()=>{ await db.ref('noodmelding').set({actief:false, door:'', tijd:0}); });
 
-/* listen to noodmelding realtime */
-db.ref('noodmelding').on('value', snap => {
+db.ref('noodmelding').on('value', snap=>{
   const d = snap.val();
-  if (!d || !d.actief) {
+  if(!d||!d.actief){
     alertOverlay.style.display='none';
-    try{ alarmAudio.pause(); alarmAudio.currentTime = 0;}catch(e){}
+    try{ alarmAudio.pause(); alarmAudio.currentTime=0; }catch(e){}
     return;
   }
-  alertDetail.innerText = Door: ${d.door} — ${new Date(d.tijd||0).toLocaleString()};
+  alertDetail.innerText = `Door: ${d.door} — ${new Date(d.tijd||0).toLocaleString()}`;
   alertOverlay.style.display='flex';
-  alarmAudio.play().catch(()=>{ /* autoplay blocked */ });
+  alarmAudio.play().catch(()=>{});
 });
 
 /* -------------------------
-   Live gebruikerslijst rendering
+   Live gebruikerslijst
 --------------------------*/
-db.ref('gebruikers').on('value', snap => {
-  const data = snap.val() || {};
-  const arr = Object.values(data || {});
+db.ref('gebruikers').on('value', snap=>{
+  const data = snap.val()||{};
+  const arr = Object.values(data||{});
   arr.sort((a,b)=> (Number(a.status||9)-Number(b.status||9)) || (''+a.naam).localeCompare(''+b.naam));
-  ovdList.innerHTML = '';
-  arr.forEach(u => {
+  ovdList.innerHTML='';
+  arr.forEach(u=>{
     const meta = statusMeta(u.status);
     const row = document.createElement('div');
-    row.className = 'row';
-    row.style.background = '#031726';
-    row.style.border = '1px solid rgba(255,255,255,0.03)';
-    row.innerHTML = 
+    row.className='row';
+    row.style.background='#031726';
+    row.style.border='1px solid rgba(255,255,255,0.03)';
+    row.innerHTML = `
       <div class="left">
         <div style="width:8px;height:36px;border-radius:6px;background:${meta.color};margin-right:10px"></div>
         <div>
@@ -474,94 +480,76 @@ db.ref('gebruikers').on('value', snap => {
       </div>
       <div style="text-align:right">
         <div class="status-badge" style="background:${meta.color}">${meta.label.replace(' — ','')}</div>
-        <div class="ts">${u.dienst || ''}</div>
+        <div class="ts">${u.dienst||''}</div>
       </div>
-    ;
+    `;
     ovdList.appendChild(row);
   });
 });
 
 /* -------------------------
    VTA management
-   - auto-fill ONBEKEND if field empty
-   - photo upload to Firebase Storage (vtas/<id>/photo.jpg)
 --------------------------*/
-function ensureVal(v){ return (v && v.trim().length>0) ? v.trim() : 'ONBEKEND'; }
+function ensureVal(v){ return (v && v.trim().length>0)? v.trim() : 'ONBEKEND'; }
 
-btnAddVta.addEventListener('click', async () => {
-  let naam = ensureVal(vtaNaam.value);
-  let reden = ensureVal(vtaReden.value);
-  let voertuig = ensureVal(vtaVoertuig.value);
-  let kleur = ensureVal(vtaKleur.value);
-  let kenmerken = ensureVal(vtaKenmerken.value);
-  let kenteken = ensureVal(vtaKenteken.value);
-  let signal = ensureVal(vtaSignalement.value);
+btnAddVta.addEventListener('click', async ()=>{
+  let naam=ensureVal(vtaNaam.value);
+  let reden=ensureVal(vtaReden.value);
+  let voertuig=ensureVal(vtaVoertuig.value);
+  let kleur=ensureVal(vtaKleur.value);
+  let kenmerken=ensureVal(vtaKenmerken.value);
+  let kenteken=ensureVal(vtaKenteken.value);
+  let signal=ensureVal(vtaSignalement.value);
 
-  // push a new VTA to DB to get key
   const newRef = db.ref('vtas').push();
   const id = newRef.key;
+  const rec = {id, naam, reden, voertuig, kleur, kenmerken, kenteken, signalement:signal, fotoUrl:'', timestamp:Date.now()};
 
-  // prepare base record
-  const rec = {
-    id,
-    naam,
-    reden,
-    voertuig,
-    kleur,
-    kenmerken,
-    kenteken,
-    signalement: signal,
-    fotoUrl: '',
-    timestamp: Date.now()
-  };
+  vtaProgress.textContent='Opslaan...';
 
-  vtaProgress.textContent = 'Opslaan...';
-
-  // if a file selected, upload to storage
-  const file = vtaFoto.files[0];
-  if (file) {
-    const ext = file.name.split('.').pop();
-    const storageRef = storage.ref().child('vtas/' + id + '/photo.' + ext);
+  const file=vtaFoto.files[0];
+  if(file){
+    const ext=file.name.split('.').pop();
+    const storageRef = storage.ref().child(`vtas/${id}/photo.${ext}`);
     const uploadTask = storageRef.put(file);
 
-    uploadTask.on('state_changed', snapshot => {
-      const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-      vtaProgress.textContent = Upload ${pct}%;
-    }, err => {
-      console.error(err); vtaProgress.textContent = 'Upload fout, opslaan zonder foto...';
-      // still save record without fotoUrl
+    uploadTask.on('state_changed', snapshot=>{
+      const pct = Math.round((snapshot.bytesTransferred/snapshot.totalBytes)*100);
+      vtaProgress.textContent=`Upload ${pct}%`;
+    }, err=>{
+      console.error(err);
+      vtaProgress.textContent='Upload fout, opslaan zonder foto...';
       newRef.set(rec).then(()=>{ vtaProgress.textContent='Opgeslagen zonder foto'; clearVtaForm(); });
-    }, async () => {
+    }, async ()=>{
       const url = await uploadTask.snapshot.ref.getDownloadURL();
-      rec.fotoUrl = url;
+      rec.fotoUrl=url;
       await newRef.set(rec);
-      vtaProgress.textContent = 'Opgeslagen';
+      vtaProgress.textContent='Opgeslagen';
       clearVtaForm();
     });
   } else {
     await newRef.set(rec);
-    vtaProgress.textContent = 'Opgeslagen (geen foto)';
+    vtaProgress.textContent='Opgeslagen (geen foto)';
     clearVtaForm();
   }
 });
 
 function clearVtaForm(){
-  vtaNaam.value=''; vtaReden.value=''; vtaVoertuig.value=''; vtaKleur.value=''; vtaKenmerken.value=''; vtaKenteken.value=''; vtaSignalement.value=''; vtaFoto.value=''; 
-  setTimeout(()=> vtaProgress.textContent = '', 2000);
+  vtaNaam.value=''; vtaReden.value=''; vtaVoertuig.value=''; vtaKleur.value=''; vtaKenmerken.value=''; vtaKenteken.value=''; vtaSignalement.value=''; vtaFoto.value='';
+  setTimeout(()=> vtaProgress.textContent='',2000);
 }
 
-/* render VTA list live + search */
-function renderVtaList(filter='') {
-  db.ref('vtas').once('value').then(snap => {
-    const data = snap.val() || {};
+function renderVtaList(filter=''){
+  db.ref('vtas').once('value').then(snap=>{
+    const data = snap.val()||{};
     const arr = Object.values(data);
-    vtaTableBody.innerHTML = '';
-    arr.sort((a,b)=> (a.naam || '').localeCompare(b.naam)).forEach(v => {
-      const txt = ${v.naam} ${v.kenteken} ${v.kenmerken}.toLowerCase();
-      if (filter && !txt.includes(filter.toLowerCase())) return;
+    vtaTableBody.innerHTML='';
+    arr.sort((a,b)=>(a.naam||'').localeCompare(b.naam)).forEach(v=>{
+      const txt = `${v.naam} ${v.kenteken} ${v.kenmerken}`.toLowerCase();
+      if(filter && !txt.includes(filter.toLowerCase())) return;
       const tr = document.createElement('tr');
-      tr.innerHTML = 
-        <td>${v.fotoUrl ? <img src="${v.fotoUrl}" class="thumb"> : <div class="thumb" style="background:#001a2a;display:flex;align-items:center;justify-content:center;color:var(--muted)">No<br>foto</div>}</td>
+      tr.innerHTML=`
+        <td>${v.fotoUrl ? `<img src="${v.fotoUrl}" class="thumb">` : `<div class="thumb" style="background:#001a2a;display:flex;align-items:center;justify-content:center;color:var(--muted)">No<br>foto</div>`}</td>
         <td>${v.naam}</td>
         <td>${v.reden}</td>
         <td>${v.voertuig} (${v.kleur})</td>
@@ -571,52 +559,49 @@ function renderVtaList(filter='') {
           <button class="btn ghost" onclick="editVta('${v.id}')">Edit</button>
           <button class="btn ghost" onclick="removeVta('${v.id}')">Remove</button>
         </td>
-      ;
+      `;
       vtaTableBody.appendChild(tr);
     });
   });
 }
 
-vtaSearch.addEventListener('input', ()=> renderVtaList(vtaSearch.value));
+vtaSearch.addEventListener('input', ()=>renderVtaList(vtaSearch.value));
 
-/* expose edit/remove for global use */
-window.editVta = async function(id){
-  const snap = await db.ref('vtas/' + id).once('value');
+window.editVta=async function(id){
+  const snap = await db.ref('vtas/'+id).once('value');
   const v = snap.val();
-  if (!v) return alert('Niet gevonden');
+  if(!v) return alert('Niet gevonden');
   const nieuweNaam = prompt('Nieuwe naam', v.naam);
-  if (nieuweNaam === null) return;
+  if(nieuweNaam===null) return;
   const nieuweReden = prompt('Nieuwe reden', v.reden);
-  if (nieuweReden === null) return;
-  await db.ref('vtas/' + id).update({naam: nieuweNaam || 'ONBEKEND', reden: nieuweReden || 'ONBEKEND', timestamp: Date.now()});
+  if(nieuweReden===null) return;
+  await db.ref('vtas/'+id).update({naam:nieuweNaam||'ONBEKEND', reden:nieuweReden||'ONBEKEND', timestamp:Date.now()});
   renderVtaList(vtaSearch.value);
 };
 
-window.removeVta = async function(id){
-  if (!confirm('Verwijder VTA?')) return;
-  // remove storage folder optionally
-  await db.ref('vtas/' + id).remove();
+window.removeVta=async function(id){
+  if(!confirm('Verwijder VTA?')) return;
+  await db.ref('vtas/'+id).remove();
   renderVtaList(vtaSearch.value);
 };
 
-/* initial render */
 renderVtaList();
+db.ref('vtas').on('value', ()=>renderVtaList(vtaSearch.value));
 
-/* helper: download gebruikers CSV */
 downloadCSV.addEventListener('click', async ()=>{
   const snap = await db.ref('gebruikers').once('value');
-  const data = snap.val() || {};
-  const rows = [['Naam','Roep','Status','Dienst','Tijd']];
-  Object.values(data).forEach(u => rows.push([u.naam, u.roep, u.status, u.dienst, new Date(u.timestamp||0).toLocaleString()]));
-  const csv = rows.map(r=>r.map(c=>"${(c||'').toString().replace(/"/g,'""')}").join(',')).join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
+  const data = snap.val()||{};
+  const rows=[['Naam','Roep','Status','Dienst','Tijd']];
+  Object.values(data).forEach(u=>rows.push([u.naam,u.roep,u.status,u.dienst,new Date(u.timestamp||0).toLocaleString()]));
+  const csv = rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'gebruikers.csv'; a.click(); URL.revokeObjectURL(url);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='gebruikers.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 });
-
-/* keep VTA list live (optional: update on changes) */
-db.ref('vtas').on('value', ()=> renderVtaList(vtaSearch.value));
-
 </script>
 </body>
 </html>
