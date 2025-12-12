@@ -3,380 +3,626 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Nederbeek — Meldkamer (Politie & Kerst Editie)</title>
+<title>Nederbeek — Meldkamer & VTA's • 🎄 Politie Kerst Editie</title>
 
 <style>
-/* ============================================
-   POLITIE + KERST THEMA
-============================================ */
 :root{
-  --bg: #001528;
-  --card: rgba(0,30,60,0.85);
-  --muted:#c8d9eb;
-  --accent:#ffd400;
+  --bg:#001326;                     /* Donker Politieblauw met wintertint */
+  --card:#07243d;                   /* Kaartkleur */
+  --muted:#cfe7ff;                  /* Zachter blauw */
+  --accent:#ff2f2f;                 /* Kerstrood accent */
   --white:#ffffff;
-
-  --xmas-red: #d62828;
-  --xmas-green: #5fa65c;
-  --xmas-gold: #ffcf63;
-
-  --police-blue: #0047ab;
 }
 
+/* KERST ACHTERGROND MET LICHTE GLINSTERS */
 body{
   margin:0;
   font-family:Inter,Arial,Helvetica,sans-serif;
-  background:radial-gradient(circle at top, #012a4a, #000814);
-  color:white;
-  overflow-x:hidden;
+  color:var(--white);
+  background:radial-gradient(circle at top, #00315c, #001326 60%);
+  background-attachment:fixed;
+  position:relative;
 }
 
-/* sneeuw */
+/* LICHTE KERST-SNEEUW */
 body::before{
   content:"";
   position:fixed;
   inset:0;
+  background-image:url('https://i.imgur.com/wQjvdyJ.png');
+  opacity:0.25;
   pointer-events:none;
-  background-image:url('https://i.imgur.com/pxyG7Z8.png');
-  opacity:0.15;
-  animation: snowfall 18s linear infinite;
-}
-@keyframes snowfall{
-  0%{background-position:0 -1000px;}
-  100%{background-position:0 1000px;}
 }
 
-/* kerstlichtjes */
-body::after{
-  content:"";
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:50px;
-  background:url('https://i.imgur.com/tx8KXGI.png') repeat-x;
-  background-size:contain;
-  pointer-events:none;
-  filter:drop-shadow(0 0 8px var(--xmas-gold));
+.container{max-width:1200px;margin:18px auto;padding:18px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+
+.title h1{
+  margin:0;
+  font-size:20px;
+  color:#fff;
+  text-shadow:0 0 8px #ff4d4d;
 }
+.title .sub{color:var(--muted);font-size:13px;margin-top:4px}
 
-.container{max-width:1200px;margin:20px auto;padding:18px}
+.controls{display:flex;gap:8px;align-items:center}
 
-.card{
-  background:var(--card);
-  padding:16px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.15);
-  box-shadow:0 6px 20px rgba(0,0,0,0.6),
-              0 0 15px rgba(0,80,200,0.4);
-  backdrop-filter: blur(6px);
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 380px;
-  gap:20px;
-}
-@media(max-width:980px){ .grid{grid-template-columns:1fr;} }
-
-h2{margin-top:0;text-shadow:0 0 8px var(--police-blue);}
-
-/* input */
-input,select,textarea{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:12px;
-  border:1px solid rgba(255,255,255,0.15);
-  background:rgba(255,255,255,0.05);
-  color:var(--white);
-}
-
-/* knoppen */
 .btn{
   background:var(--accent);
-  color:#001b35;
-  padding:10px 14px;
+  color:#fff;
+  padding:8px 12px;
   border-radius:8px;
   border:none;
   cursor:pointer;
   font-weight:700;
-  box-shadow:0 0 10px var(--xmas-gold);
-  transition:0.2s;
+  box-shadow:0 0 8px rgba(255,0,0,0.4);
 }
-.btn:hover{ transform:scale(1.05); }
 
 .btn.ghost{
-  background:rgba(255,255,255,0.05);
+  background:transparent;
   border:1px solid rgba(255,255,255,0.2);
-  color:white;
-  box-shadow:none;
+  color:var(--white);
 }
 
-/* noodknop */
-.huge.nood{
-  background:linear-gradient(90deg,#d62828,#0047ab,#d62828);
-  background-size:300% 100%;
-  animation: siren 1s infinite linear;
-  border:none;
-  color:white;
-  font-size:20px;
-  padding:16px;
-  border-radius:14px;
-  box-shadow:0 0 20px red, 0 0 20px blue;
-  margin-top:10px;
-}
-@keyframes siren{
-  0%{background-position:0%}
-  100%{background-position:100%}
+.grid{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-top:16px}
+@media(max-width:980px){.grid{grid-template-columns:1fr}}
+
+.card{
+  background:var(--card);
+  padding:12px;
+  border-radius:12px;
+  box-shadow:0 6px 16px rgba(0,0,0,0.6);
+  border:1px solid rgba(255,255,255,0.03);
 }
 
-/* tabel */
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{
+/* POLITIE-BLAUWE RAND + KERST GLANS */
+.card h3{
+  margin:0;
+  padding-bottom:6px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  color:#fff;
+  text-shadow:0 0 6px #2fa8ff;
+}
+
+/* Input velden */
+input,select,textarea{
+  width:100%;
   padding:10px;
-  border-bottom:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.05);
+  color:var(--white);
 }
 
-.thumb{width:80px;height:60px;object-fit:cover;border-radius:6px;}
+textarea{min-height:80px;resize:vertical}
 
-/* OVD */
+.select-status{font-weight:700}
+
+/* NOODKNOP: politie rood + kerst glow */
+.huge{
+  font-size:18px;
+  padding:14px;
+  border-radius:12px;
+}
+.nood{
+  background:linear-gradient(180deg,#ff2f2f,#b30000);
+  color:white;
+  border:none;
+  box-shadow:0 0 14px #ff0000;
+}
+
+.small{color:var(--muted);font-size:13px}
+
+.ovd-list{max-height:420px;overflow:auto;margin-top:10px}
+
 .row{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  background:rgba(255,255,255,0.05);
   padding:10px;
-  border-radius:10px;
-  margin-bottom:10px;
-  border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;
+  margin-bottom:8px;
+  background:#031726;
+  border:1px solid rgba(255,255,255,0.08);
 }
+
 .status-badge{
-  padding:8px 12px;
+  min-width:120px;
+  text-align:center;
+  padding:8px;
   border-radius:8px;
   font-weight:700;
 }
 
-/* nood alarm overlay */
+.ts{font-size:12px;color:var(--muted)}
+
+.nav{display:flex;gap:8px;align-items:center;margin-left:8px}
+.link{
+  color:var(--muted);
+  text-decoration:none;
+  padding:8px;
+  border-radius:8px;
+}
+.link.active{
+  background:rgba(255,255,255,0.08);
+  color:var(--white);
+  box-shadow:0 0 6px rgba(255,255,255,0.1);
+}
+
+.footer{
+  margin-top:12px;
+  color:var(--muted);
+  font-size:13px;
+  text-align:center;
+}
+
+/* NOODALARM: rode kerst-flikker animatie */
 #alertOverlay{
   position:fixed;
   inset:0;
   display:none;
   align-items:center;
   justify-content:center;
-  background:rgba(120,0,0,0.92);
+  z-index:99999;
+  background:linear-gradient(180deg,rgba(200,0,0,0.95),rgba(120,0,0,0.95));
   color:white;
-  z-index:999999;
-  cursor:pointer;
-  animation:pulse 1s infinite;
-}
-@keyframes pulse{
-  0%{opacity:1;}50%{opacity:0.4;}100%{opacity:1;}
-}
-#alertOverlay h2{
-  font-size:50px;
-  text-shadow:0 0 15px red;
-}
-
-.footer{
   text-align:center;
-  color:var(--muted);
-  margin-top:20px;
-  padding:10px;
+  padding:20px;
+  cursor:pointer;
+  animation:pulse 0.7s infinite;
 }
-</style>
 
+@keyframes pulse{
+  0%{opacity:1}
+  50%{opacity:0.35}
+  100%{opacity:1}
+}
+
+#alertOverlay h2{
+  font-size:48px;
+  margin:8px;
+  text-shadow:0 0 12px #ff0000;
+}
+
+#alertOverlay p{font-size:20px;margin:6px}
+
+/* TABEL / VTA */
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  text-align:left;
+}
+
+.thumb{
+  width:80px;
+  height:60px;
+  object-fit:cover;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,0.12);
+}
+
+.form-inline{display:flex;gap:8px}
+.form-inline>*{flex:1}
+
+@media(max-width:760px){
+  .form-inline{flex-direction:column}
+  .grid{grid-template-columns:1fr}
+}
+
+</style>
 </head>
 <body>
-
 <div class="container">
+  <div class="header">
+    <div class="title">
+      <h1>Nederbeek — Meldkamer 🎄</h1>
+      <div class="sub">Realtime statussen • Noodknop • VTA beheer • Kerst Editie</div>
+    </div>
 
-  <div class="grid">
+    <div class="controls">
+      <nav class="nav" aria-label="Hoofdmenu">
+        <a href="#dashboard" class="link" id="navDashboard">Dashboard</a>
+        <a href="#vtas" class="link" id="navVtas">VTAs</a>
+      </nav>
+      <button id="enableSound" class="btn">Enable sound</button>
+    </div>
+  </div>
 
-    <!-- LINKERZIJDE -->
-    <div>
+  <!-- DASHBOARD content -->
+  <div id="pageDashboard" class="page">
+    <div class="grid">
+      <div>
+        <div id="loginCard" class="card">
+          <h3>Inloggen</h3>
+          <div class="small">Vul naam en roepnummer in (bv. 34-101)</div>
+          <div class="field"><input id="inputName" placeholder="Naam"></div>
+          <div class="field"><input id="inputRoep" placeholder="Roepnummer"></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button id="btnLogin" class="btn">Inloggen</button>
+            <button id="btnLogout" class="btn ghost" style="display:none">Uitloggen</button>
+          </div>
+        </div>
 
-      <div class="card">
-        <h2>Nieuw incident</h2>
+        <div id="controlCard" class="card" style="display:none;margin-top:12px">
+          <h3>Controlepaneel</h3>
+          <div id="currentUser" class="small" style="margin-bottom:8px"></div>
 
-        <label>Locatie</label>
-        <input id="locInput" placeholder="Bijv: Kerkstraat 12" />
+          <div class="field">
+            <label class="small">Status (wijzigt meteen bij select)</label>
+            <select id="statusSelect" class="select-status">
+              <option value="1">1 — Inzetbaar, vrij</option>
+              <option value="2">2 — Aanrijdend naar de melding</option>
+              <option value="3">3 — Ter plaatse</option>
+              <option value="4">4 — Bezet, max 30 minuten</option>
+              <option value="5">5 — Transport aanvraag</option>
+              <option value="6">6 — Aanvraag OC</option>
+              <option value="7">7 — Spoed aanvraag OC</option>
+              <option value="8">8 — Uitdienst</option>
+            </select>
+          </div>
 
-        <label>Type melding</label>
-        <select id="typeInput">
-          <option>Verkeersongeval</option>
-          <option>Vechtpartij</option>
-          <option>Brand</option>
-          <option>Diefstal</option>
-          <option>Overval</option>
-          <option>Verdachte situatie</option>
-          <option>Huiselijk geweld</option>
-          <option>Reanimatie</option>
-        </select>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button id="btnToggleDienst" class="btn ghost">In / Uit dienst</button>
+            <button id="btnSetStatus" class="btn" style="display:none">Opslaan</button>
+          </div>
 
-        <label>Omschrijving</label>
-        <textarea id="descInput" rows="3"></textarea>
+          <div style="margin-top:14px">
+            <button id="btnNood" class="huge nood">🚨 NOODKNOP</button>
+          </div>
 
-        <label>Afbeelding (optioneel)</label>
-        <input id="imgInput" type="file" accept="image/*" />
+          <div style="margin-top:12px">
+            <button id="btnResetNood" class="btn ghost">Reset nood (OVD)</button>
+            <button id="btnResetDienst" class="btn ghost">Reset dienst (wis alle gebruikers)</button>
+          </div>
+        </div>
 
-        <button class="btn" onclick="addIncident()">Toevoegen</button>
+        <div class="card" style="margin-top:12px">
+          <h3>Uitleg</h3>
+          <p class="small">Gebruik de noodknop alleen bij echte incidenten. Alarm verschijnt voor iedereen en blijft knipperen totdat iemand het reset.</p>
+        </div>
       </div>
 
-      <!-- INCIDENTEN -->
-      <div class="card" style="margin-top:20px">
-        <h2>Alle incidenten</h2>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Tijd</th>
-              <th>Locatie</th>
-              <th>Type</th>
-              <th>Foto</th>
-              <th>Actie</th>
-            </tr>
-          </thead>
-          <tbody id="incidentTable"></tbody>
+      <!-- RIGHT column -->
+      <aside>
+        <div class="card">
+          <h3>OVD / Live overzicht</h3>
+          <div class="small">Gesorteerd op status (1 → 8)</div>
+          <div id="ovdList" class="ovd-list" style="margin-top:10px"></div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h3>Quick actions</h3>
+          <div style="display:flex;gap:8px">
+            <button id="openVta" class="btn ghost">Open VTA beheer</button>
+            <button id="downloadCSV" class="btn ghost">Download gebruikers CSV</button>
+          </div>
+          <div class="small" style="margin-top:8px">Gebruik 'Open VTA beheer' om naar de VTAs-tab te navigeren.</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- VTAs page (tab) -->
+  <div id="pageVtas" class="page" style="display:none">
+    <div class="card">
+      <h3>VTA — Verdachten / Personen</h3>
+      <div class="small">Vul elk veld in; als je iets niet weet wordt automatisch <strong>ONBEKEND</strong> ingevuld.</div>
+
+      <div style="margin-top:12px" class="card">
+        <h4>Nieuw VTA formulier</h4>
+
+        <div class="form-inline" style="margin-top:10px">
+          <input id="vtaNaam" placeholder="Naam">
+          <input id="vtaReden" placeholder="Redenen/omschrijven">
+        </div>
+
+        <div class="form-inline" style="margin-top:10px">
+          <input id="vtaVoertuig" placeholder="Voertuig (soort)">
+          <input id="vtaKleur" placeholder="Kleur">
+        </div>
+
+        <div class="form-inline" style="margin-top:10px">
+          <input id="vtaKenmerken" placeholder="Kenmerken">
+          <input id="vtaKenteken" placeholder="Kenteken">
+        </div>
+
+        <div style="margin-top:10px">
+          <textarea id="vtaSignalement" placeholder="Signalement (beschrijving)"></textarea>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+          <input type="file" id="vtaFoto" accept="image/*">
+          <button id="btnAddVta" class="btn">Opslaan VTA</button>
+        </div>
+
+        <div id="vtaProgress" class="small" style="margin-top:8px"></div>
+      </div>
+
+      <div style="margin-top:12px" class="card">
+        <h4>Alle VTAs</h4>
+        <div style="margin-top:8px">
+          <input id="vtaSearch" placeholder="Zoek op naam, kenteken of kenmerken...">
+        </div>
+
+        <table class="table" style="margin-top:10px">
+          <thead><tr><th>Foto</th><th>Naam</th><th>Reden</th><th>Voertuig</th><th>Kenteken</th><th>Signalement</th><th>Acties</th></tr></thead>
+          <tbody id="vtaTableBody"></tbody>
         </table>
       </div>
-
     </div>
-
-    <!-- RECHTERZIJDE -->
-    <div class="card">
-      <h2>Huidige officieren (OVD)</h2>
-      <div id="ovdList"></div>
-
-      <h3 style="margin-top:20px">Noodknop</h3>
-      <button class="btn huge nood" onclick="triggerAlert()">NOODALARM</button>
-    </div>
-
   </div>
 
-  <div class="footer">
-    © Meldkamer Nederbeek – Politie × Kerst Editie 🎄🚔
+  <div class="footer">© Nederbeek — Meldkamer 🎄 Kerst Editie</div>
+</div>
+
+<!-- ALERT OVERLAY -->
+<div id="alertOverlay" title="Klik om te resetten">
+  <div>
+    <h2>🚨 NOODALARM 🚨</h2>
+    <p id="alertDetail">—</p>
+    <div style="margin-top:18px">
+      <button id="closeAlert" class="btn" style="background:#fff;color:#001b35">Stop alarm</button>
+    </div>
   </div>
-
 </div>
 
-<!-- OVERLAY -->
-<div id="alertOverlay" onclick="hideAlert()">
-  <h2>NOODALARM ACTIEF</h2>
-  <p>Tik om te sluiten</p>
-</div>
+<!-- AUDIO -->
+<audio id="alarmAudio" loop preload="auto">
+  <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
+</audio>
 
-<!-- FIREBASE SCRIPT -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getDatabase,
-  ref,
-  push,
-  onValue,
-  remove
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
-/* -----------------------------------------
-   VERVANG DIT DOOR JOUW EIGEN FIREBASE CONFIG
------------------------------------------- */
+<script>
+/* ==== Firebase Config ==== */
 const firebaseConfig = {
-  apiKey: "JOUW_API_KEY",
-  authDomain: "JOUW_AUTH_DOMAIN",
-  databaseURL: "JOUW_DATABASE_URL",
-  projectId: "JOUW_PROJECT_ID",
-  storageBucket: "JOUW_STORAGE",
-  messagingSenderId: "JOUW_SENDER",
-  appId: "JOUW_APP_ID"
+  apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
+  authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
+  databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/",
+  projectId: "politie-nederbeek-fd6ff",
+  storageBucket: "politie-nederbeek-fd6ff.firebasestorage.app",
+  messagingSenderId: "49112852872",
+  appId: "1:49112852872:web:9b235d5e5dfd2c89aaf23d"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const storage = firebase.storage();
+const auth = firebase.auth();
+/* Helpers */
+function escape(s){return String(s||"").trim()||"ONBEKEND"}
+function ts(){return new Date().toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+/* ===== LOGIN ===== */
+const inputName=document.getElementById("inputName")
+const inputRoep=document.getElementById("inputRoep")
+const btnLogin=document.getElementById("btnLogin")
+const btnLogout=document.getElementById("btnLogout")
+const loginCard=document.getElementById("loginCard")
+const controlCard=document.getElementById("controlCard")
+const currentUser=document.getElementById("currentUser")
 
-const incRef = ref(db, "incidenten");
-const ovdRef = ref(db, "ovd");
+let userKey=null
 
-/* --- INCIDENT TOEVOEGEN --- */
-async function addIncident() {
-  const loc = locInput.value;
-  const type = typeInput.value;
-  const desc = descInput.value;
-  const file = imgInput.files[0];
-
-  if (!loc) return alert("Locatie verplicht");
-
-  let foto = "";
-  if (file) {
-    foto = await new Promise(res=>{
-      const r = new FileReader();
-      r.onload=()=>res(r.result);
-      r.readAsDataURL(file);
-    });
-  }
-
-  push(incRef,{
-    tijd:new Date().toLocaleTimeString(),
-    locatie:loc,
-    type:type,
-    beschrijving:desc,
-    foto:foto
-  });
-
-  locInput.value="";
-  descInput.value="";
-  imgInput.value="";
+btnLogin.onclick=()=>{
+  const naam=escape(inputName.value)
+  const roep=escape(inputRoep.value)
+  if(!naam||!roep)return alert("Vul naam en roepnummer in.")
+  userKey=roep
+  db.ref("gebruikers/"+userKey).set({
+    naam,roep,status:"1",tijd:ts()
+  })
+  controlCard.style.display="block"
+  btnLogout.style.display="inline-block"
+  loginCard.style.display="none"
+  currentUser.textContent=`Ingelogd als ${naam} (${roep})`
 }
 
-/* --- INCIDENTEN TONEN --- */
-onValue(incRef,(snap)=>{
-  incidentTable.innerHTML="";
-
-  snap.forEach(d=>{
-    const id=d.key;
-    const x=d.val();
-
-    incidentTable.innerHTML += `
-      <tr>
-        <td>${x.tijd}</td>
-        <td>${x.locatie}</td>
-        <td>${x.type}</td>
-        <td>${x.foto ? `<img class='thumb' src='${x.foto}'/>` : "-"}</td>
-        <td><button class="btn ghost" onclick="delIncident('${id}')">Verwijder</button></td>
-      </tr>
-    `;
-  });
-});
-
-/* --- INCIDENT VERWIJDEREN --- */
-window.delIncident = function(id){
-  remove(ref(db,"incidenten/"+id));
+btnLogout.onclick=()=>{
+  if(!userKey)return
+  db.ref("gebruikers/"+userKey).remove()
+  userKey=null
+  controlCard.style.display="none"
+  loginCard.style.display="block"
+  btnLogout.style.display="none"
 }
 
-/* --- OVD TONEN --- */
-onValue(ovdRef,(snap)=>{
-  ovdList.innerHTML="";
+/* ===== STATUS ===== */
+const statusSelect=document.getElementById("statusSelect")
+statusSelect.onchange=()=>{
+  if(!userKey)return
+  db.ref("gebruikers/"+userKey).update({
+    status:statusSelect.value,tijd:ts()
+  })
+}
 
-  snap.forEach(d=>{
-    const x=d.val();
+/* ===== DIENST ===== */
+const btnToggleDienst=document.getElementById("btnToggleDienst")
+btnToggleDienst.onclick=()=>{
+  if(!userKey)return
+  db.ref("gebruikers/"+userKey).once("value").then(s=>{
+    if(!s.exists())return
+    const st=s.val().status
+    const nieuw=(st==="8")?"1":"8"
+    db.ref("gebruikers/"+userKey).update({status:nieuw,tijd:ts()})
+  })
+}
 
-    ovdList.innerHTML += `
-      <div class="row">
-        <div>
-          <strong>${x.naam}</strong><br>
-          <small>${x.eenheid}</small>
-        </div>
-        <div class="status-badge" style="background:${x.status=='Beschikbaar' ? 'var(--xmas-green)' : 'var(--xmas-red)'}">
-          ${x.status}
-        </div>
+/* RESET DIENST */
+document.getElementById("btnResetDienst").onclick=()=>{
+  if(!confirm("Weet je zeker dat je ALLE gebruikers wilt verwijderen?"))return
+  db.ref("gebruikers").remove()
+}
+
+/* ===== OVD LIVE LIJST ===== */
+const ovdList=document.getElementById("ovdList")
+db.ref("gebruikers").on("value",snap=>{
+  ovdList.innerHTML=""
+  const arr=[]
+  snap.forEach(c=>arr.push(c.val()))
+  arr.sort((a,b)=>Number(a.status)-Number(b.status))
+  for(const x of arr){
+    const row=document.createElement("div")
+    row.className="row"
+    row.innerHTML=`
+      <div>
+        <div><strong>${x.naam}</strong> (${x.roep})</div>
+        <div class="ts">${x.tijd}</div>
       </div>
-    `;
-  });
-});
+      <div class="status-badge">Status ${x.status}</div>
+    `
+    ovdList.appendChild(row)
+  }
+})
 
-/* --- NOODALARM --- */
-window.triggerAlert = function(){
-  alertOverlay.style.display="flex";
+/* ===== NOODALARM ===== */
+const btnNood=document.getElementById("btnNood")
+const btnResetNood=document.getElementById("btnResetNood")
+const alertOverlay=document.getElementById("alertOverlay")
+const alertDetail=document.getElementById("alertDetail")
+const alarmAudio=document.getElementById("alarmAudio")
+
+let soundOn=false
+document.getElementById("enableSound").onclick=()=>{soundOn=true}
+
+btnNood.onclick=()=>{
+  if(!userKey)return
+  db.ref("alarm").set({
+    actief:true,
+    door:userKey,
+    tijd:ts()
+  })
 }
-window.hideAlert = function(){
-  alertOverlay.style.display="none";
+
+btnResetNood.onclick=()=>db.ref("alarm").remove()
+
+document.getElementById("closeAlert").onclick=()=>db.ref("alarm").remove()
+
+db.ref("alarm").on("value",snap=>{
+  if(snap.exists()){
+    const d=snap.val()
+    alertDetail.textContent=`Door: ${d.door} – ${d.tijd}`
+    alertOverlay.style.display="flex"
+    if(soundOn)alarmAudio.play()
+  }else{
+    alertOverlay.style.display="none"
+    alarmAudio.pause()
+    alarmAudio.currentTime=0
+  }
+})
+
+alertOverlay.onclick=()=>db.ref("alarm").remove()
+
+/* ===== NAVIGATIE ===== */
+const navDashboard=document.getElementById("navDashboard")
+const navVtas=document.getElementById("navVtas")
+const pageDashboard=document.getElementById("pageDashboard")
+const pageVtas=document.getElementById("pageVtas")
+
+function showPage(p){
+  pageDashboard.style.display=(p==="dash")?"block":"none"
+  pageVtas.style.display=(p==="vta")?"block":"none"
+  navDashboard.classList.toggle("active",p==="dash")
+  navVtas.classList.toggle("active",p==="vta")
 }
+navDashboard.onclick=()=>showPage("dash")
+navVtas.onclick=()=>showPage("vta")
+document.getElementById("openVta").onclick=()=>showPage("vta")
+
+/* ===== CSV EXPORT ===== */
+document.getElementById("downloadCSV").onclick=()=>{
+  db.ref("gebruikers").once("value").then(s=>{
+    let csv="naam,roep,status,tijd\n"
+    s.forEach(v=>{
+      const x=v.val()
+      csv+=`${x.naam},${x.roep},${x.status},${x.tijd}\n`
+    })
+    const blob=new Blob([csv],{type:"text/csv"})
+    const url=URL.createObjectURL(blob)
+    const a=document.createElement("a")
+    a.href=url
+    a.download="gebruikers.csv"
+    a.click()
+  })
+}
+
+/* ===== VTAs ===== */
+const vtaTableBody=document.getElementById("vtaTableBody")
+const vtaSearch=document.getElementById("vtaSearch")
+
+function renderVtas(list){
+  vtaTableBody.innerHTML=""
+  list.forEach(x=>{
+    const tr=document.createElement("tr")
+    tr.innerHTML=`
+      <td><img src="${x.foto}" class="thumb"></td>
+      <td>${x.naam}</td>
+      <td>${x.reden}</td>
+      <td>${x.voertuig} – ${x.kleur}</td>
+      <td>${x.kenteken}</td>
+      <td>${x.signalement}</td>
+      <td><button data-id="${x.id}" class="btn ghost delVta">Verwijder</button></td>
+    `
+    vtaTableBody.appendChild(tr)
+  })
+}
+
+function loadVtas(){
+  db.ref("vtas").on("value",snap=>{
+    const arr=[]
+    snap.forEach(c=>arr.push({...c.val(),id:c.key}))
+    const q=vtaSearch.value.toLowerCase()
+    const filtered=arr.filter(x=>
+      x.naam.toLowerCase().includes(q)||
+      x.kenteken.toLowerCase().includes(q)||
+      x.kenmerken.toLowerCase().includes(q)
+    )
+    renderVtas(filtered)
+  })
+}
+loadVtas()
+
+vtaSearch.oninput=loadVtas
+
+/* NIEUWE VTA OPSLAAN */
+document.getElementById("btnAddVta").onclick=async()=>{
+  const naam=escape(document.getElementById("vtaNaam").value)
+  const reden=escape(document.getElementById("vtaReden").value)
+  const voertuig=escape(document.getElementById("vtaVoertuig").value)
+  const kleur=escape(document.getElementById("vtaKleur").value)
+  const kenmerken=escape(document.getElementById("vtaKenmerken").value)
+  const kenteken=escape(document.getElementById("vtaKenteken").value)
+  const signalement=escape(document.getElementById("vtaSignalement").value)
+  const file=document.getElementById("vtaFoto").files[0]
+
+  if(!file)return alert("Foto is verplicht!")
+
+  const id=Date.now()
+  document.getElementById("vtaProgress").textContent="Uploaden..."
+
+  const ref=storage.ref("vta_fotos/"+id)
+  await ref.put(file)
+  const url=await ref.getDownloadURL()
+
+  await db.ref("vtas/"+id).set({
+    naam,reden,voertuig,kleur,kenmerken,kenteken,signalement,foto:url
+  })
+
+  document.getElementById("vtaProgress").textContent="✔️ Opgeslagen"
+  setTimeout(()=>document.getElementById("vtaProgress").textContent="",2000)
+}
+
+/* VERWIJDER VTA */
+document.addEventListener("click",e=>{
+  if(e.target.classList.contains("delVta")){
+    const id=e.target.dataset.id
+    if(confirm("Verwijderen?"))db.ref("vtas/"+id).remove()
+  }
+})
 </script>
 
 </body>
