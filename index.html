@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Nederbeek — Meldkamer (Politie & Kerst Special)</title>
+<title>Nederbeek — Meldkamer (Politie & Kerst Editie)</title>
 
 <style>
 /* ============================================
    POLITIE + KERST THEMA
-   ============================================ */
+============================================ */
 :root{
   --bg: #001528;
   --card: rgba(0,30,60,0.85);
@@ -16,16 +16,13 @@
   --accent:#ffd400;
   --white:#ffffff;
 
-  /* kerst kleuren */
   --xmas-red: #d62828;
   --xmas-green: #5fa65c;
   --xmas-gold: #ffcf63;
 
-  /* politie blauw */
   --police-blue: #0047ab;
 }
 
-/* achtergrond met lichte kerst-glow */
 body{
   margin:0;
   font-family:Inter,Arial,Helvetica,sans-serif;
@@ -34,7 +31,7 @@ body{
   overflow-x:hidden;
 }
 
-/* sneeuw-animatie */
+/* sneeuw */
 body::before{
   content:"";
   position:fixed;
@@ -49,7 +46,7 @@ body::before{
   100%{background-position:0 1000px;}
 }
 
-/* kerstlichtjes bovenaan */
+/* kerstlichtjes */
 body::after{
   content:"";
   position:fixed;
@@ -61,32 +58,43 @@ body::after{
   filter:drop-shadow(0 0 8px var(--xmas-gold));
 }
 
-/* --------------------------------------------
-   STRUCTUUR
----------------------------------------------*/
-.container{max-width:1200px;margin:18px auto;padding:18px}
-.header{
-  display:flex;justify-content:space-between;align-items:center;gap:12px;
-  padding-bottom:12px;
-  border-bottom:2px solid rgba(255,255,255,0.1);
-  box-shadow:0 6px 20px rgba(0,0,0,0.5);
-  background:linear-gradient(90deg,rgba(0,40,70,0.8),rgba(0,10,20,0.7));
-  border-radius:12px;
-}
-.title h1{
-  margin:0;font-size:22px;
-  text-shadow:0 0 8px var(--police-blue);
-}
-.title .sub{color:var(--muted);font-size:13px;margin-top:4px}
-.controls{display:flex;gap:8px;align-items:center}
+.container{max-width:1200px;margin:20px auto;padding:18px}
 
-/* --------------------------------------------
-   KNOPPEN
----------------------------------------------*/
+.card{
+  background:var(--card);
+  padding:16px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.15);
+  box-shadow:0 6px 20px rgba(0,0,0,0.6),
+              0 0 15px rgba(0,80,200,0.4);
+  backdrop-filter: blur(6px);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 380px;
+  gap:20px;
+}
+@media(max-width:980px){ .grid{grid-template-columns:1fr;} }
+
+h2{margin-top:0;text-shadow:0 0 8px var(--police-blue);}
+
+/* input */
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:12px;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.05);
+  color:var(--white);
+}
+
+/* knoppen */
 .btn{
   background:var(--accent);
   color:#001b35;
-  padding:8px 12px;
+  padding:10px 14px;
   border-radius:8px;
   border:none;
   cursor:pointer;
@@ -102,48 +110,8 @@ body::after{
   color:white;
   box-shadow:none;
 }
-.btn.ghost:hover{
-  background:rgba(255,255,255,0.12);
-}
 
-/* --------------------------------------------
-   POLITIE + KERST CARDS
----------------------------------------------*/
-.card{
-  background:var(--card);
-  padding:12px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:0 6px 20px rgba(0,0,0,0.6),
-              0 0 15px rgba(0,80,200,0.4);
-  backdrop-filter: blur(6px);
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 380px;
-  gap:16px;margin-top:16px
-}
-
-@media(max-width:980px){
-  .grid{grid-template-columns:1fr}
-}
-
-/* --------------------------------------------
-   INVOERVELDEN
----------------------------------------------*/
-input,select,textarea{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  border:1px solid rgba(255,255,255,0.15);
-  background:rgba(255,255,255,0.05);
-  color:var(--white);
-}
-
-/* --------------------------------------------
-   NOODKNOP (kerst + politie sirene)
----------------------------------------------*/
+/* noodknop */
 .huge.nood{
   background:linear-gradient(90deg,#d62828,#0047ab,#d62828);
   background-size:300% 100%;
@@ -154,92 +122,87 @@ input,select,textarea{
   padding:16px;
   border-radius:14px;
   box-shadow:0 0 20px red, 0 0 20px blue;
+  margin-top:10px;
 }
 @keyframes siren{
   0%{background-position:0%}
   100%{background-position:100%}
 }
 
-/* --------------------------------------------
-   LIVE OVD LIST
----------------------------------------------*/
+/* tabel */
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+.thumb{width:80px;height:60px;object-fit:cover;border-radius:6px;}
+
+/* OVD */
 .row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:10px;border-radius:8px;margin-bottom:8px;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.05);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:rgba(255,255,255,0.05);
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  border:1px solid rgba(255,255,255,0.1);
 }
-
 .status-badge{
-  min-width:120px;text-align:center;padding:8px;border-radius:8px;
+  padding:8px 12px;
+  border-radius:8px;
   font-weight:700;
-  box-shadow:0 0 10px rgba(255,255,255,0.3);
 }
 
-/* --------------------------------------------
-   KERSTALARM OVERLAY
----------------------------------------------*/
+/* nood alarm overlay */
 #alertOverlay{
-  position:fixed;inset:0;display:none;
-  align-items:center;justify-content:center;
-  z-index:99999;
-  background:linear-gradient(180deg,rgba(150,0,0,0.95),rgba(90,0,0,0.95));
-  color:white;text-align:center;padding:20px;cursor:pointer;
-  animation: pulse 1s infinite;
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(120,0,0,0.92);
+  color:white;
+  z-index:999999;
+  cursor:pointer;
+  animation:pulse 1s infinite;
 }
 @keyframes pulse{
-  0%{opacity:1;}50%{opacity:0.3;}100%{opacity:1;}
+  0%{opacity:1;}50%{opacity:0.4;}100%{opacity:1;}
 }
-
 #alertOverlay h2{
-  font-size:48px;margin:6px;
+  font-size:50px;
   text-shadow:0 0 15px red;
 }
 
-/* --------------------------------------------
-   TABEL + VTA
----------------------------------------------*/
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.1);}
-
-.thumb{
-  width:80px;height:60px;object-fit:cover;border-radius:6px;
-  border:1px solid rgba(255,255,255,0.1);
-}
-
-/* --------------------------------------------
-   KERST FOOTER
----------------------------------------------*/
 .footer{
-  margin-top:12px;
-  color:var(--muted);
-  font-size:13px;
   text-align:center;
-  padding:12px;
-  border-top:1px solid rgba(255,255,255,0.1);
+  color:var(--muted);
+  margin-top:20px;
+  padding:10px;
 }
 </style>
+
 </head>
 <body>
 
-<!-- ============================================
-     OVZ / INCIDENTEN / FIREBASE / FUNCTIES
-============================================ -->
-
 <div class="container">
+
   <div class="grid">
 
-    <!-- Linkerzijde -->
+    <!-- LINKERZIJDE -->
     <div>
+
       <div class="card">
         <h2>Nieuw incident</h2>
 
         <label>Locatie</label>
-        <input id="locInput" placeholder="Bijv: Dorpsstraat 12" />
+        <input id="locInput" placeholder="Bijv: Kerkstraat 12" />
 
         <label>Type melding</label>
         <select id="typeInput">
-          <option>Vekeersongeval</option>
+          <option>Verkeersongeval</option>
           <option>Vechtpartij</option>
           <option>Brand</option>
           <option>Diefstal</option>
@@ -258,8 +221,8 @@ input,select,textarea{
         <button class="btn" onclick="addIncident()">Toevoegen</button>
       </div>
 
-      <!-- Incidentenlijst -->
-      <div class="card" style="margin-top:16px">
+      <!-- INCIDENTEN -->
+      <div class="card" style="margin-top:20px">
         <h2>Alle incidenten</h2>
         <table class="table">
           <thead>
@@ -274,9 +237,10 @@ input,select,textarea{
           <tbody id="incidentTable"></tbody>
         </table>
       </div>
+
     </div>
 
-    <!-- Rechterzijde -->
+    <!-- RECHTERZIJDE -->
     <div class="card">
       <h2>Huidige officieren (OVD)</h2>
       <div id="ovdList"></div>
@@ -288,26 +252,19 @@ input,select,textarea{
   </div>
 
   <div class="footer">
-    © Meldkamer Nederbeek • Politie x Kerst Editie 🎄🚔  
+    © Meldkamer Nederbeek – Politie × Kerst Editie 🎄🚔
   </div>
+
 </div>
 
-<!-- ============================================
-     OVERLAY NOODALARM
-============================================ -->
+<!-- OVERLAY -->
 <div id="alertOverlay" onclick="hideAlert()">
   <h2>NOODALARM ACTIEF</h2>
   <p>Tik om te sluiten</p>
 </div>
 
-<!-- ============================================
-     FIREBASE & SCRIPT
-============================================ -->
-
+<!-- FIREBASE SCRIPT -->
 <script type="module">
-/* ================================
-   Firebase (jouw originele config)
-================================ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getDatabase,
@@ -317,13 +274,16 @@ import {
   remove
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+/* -----------------------------------------
+   VERVANG DIT DOOR JOUW EIGEN FIREBASE CONFIG
+------------------------------------------ */
 const firebaseConfig = {
   apiKey: "JOUW_API_KEY",
-  authDomain: "JOUW_DOMAIN",
+  authDomain: "JOUW_AUTH_DOMAIN",
   databaseURL: "JOUW_DATABASE_URL",
   projectId: "JOUW_PROJECT_ID",
-  storageBucket: "JOUW_BUCKET",
-  messagingSenderId: "JOUW_ID",
+  storageBucket: "JOUW_STORAGE",
+  messagingSenderId: "JOUW_SENDER",
   appId: "JOUW_APP_ID"
 };
 
@@ -333,103 +293,90 @@ const db = getDatabase(app);
 const incRef = ref(db, "incidenten");
 const ovdRef = ref(db, "ovd");
 
-/* ================================
-   INCIDENT TOEVOEGEN
-================================ */
+/* --- INCIDENT TOEVOEGEN --- */
 async function addIncident() {
-  const loc = document.getElementById("locInput").value;
-  const type = document.getElementById("typeInput").value;
-  const desc = document.getElementById("descInput").value;
-  const file = document.getElementById("imgInput").files[0];
+  const loc = locInput.value;
+  const type = typeInput.value;
+  const desc = descInput.value;
+  const file = imgInput.files[0];
 
-  if (!loc || !type) return alert("Locatie en type verplicht");
+  if (!loc) return alert("Locatie verplicht");
 
-  let fotoURL = "";
-
+  let foto = "";
   if (file) {
-    fotoURL = await new Promise((res) => {
+    foto = await new Promise(res=>{
       const r = new FileReader();
-      r.onload = () => res(r.result);
+      r.onload=()=>res(r.result);
       r.readAsDataURL(file);
     });
   }
 
-  push(incRef, {
-    tijd: new Date().toLocaleTimeString(),
-    locatie: loc,
-    type: type,
-    beschrijving: desc,
-    foto: fotoURL
+  push(incRef,{
+    tijd:new Date().toLocaleTimeString(),
+    locatie:loc,
+    type:type,
+    beschrijving:desc,
+    foto:foto
   });
 
-  document.getElementById("locInput").value = "";
-  document.getElementById("descInput").value = "";
-  document.getElementById("imgInput").value = "";
+  locInput.value="";
+  descInput.value="";
+  imgInput.value="";
 }
 
-/* ================================
-   INCIDENTEN LADEN
-================================ */
-onValue(incRef, (snap) => {
-  const tbody = document.getElementById("incidentTable");
-  tbody.innerHTML = "";
+/* --- INCIDENTEN TONEN --- */
+onValue(incRef,(snap)=>{
+  incidentTable.innerHTML="";
 
-  snap.forEach((d) => {
-    const id = d.key;
-    const x = d.val();
+  snap.forEach(d=>{
+    const id=d.key;
+    const x=d.val();
 
-    tbody.innerHTML += `
+    incidentTable.innerHTML += `
       <tr>
         <td>${x.tijd}</td>
         <td>${x.locatie}</td>
         <td>${x.type}</td>
-        <td>${x.foto ? `<img class="thumb" src="${x.foto}">` : "-"}</td>
-        <td><button class="btn ghost" onclick="delIncident('${id}')">Verwijderen</button></td>
+        <td>${x.foto ? `<img class='thumb' src='${x.foto}'/>` : "-"}</td>
+        <td><button class="btn ghost" onclick="delIncident('${id}')">Verwijder</button></td>
       </tr>
     `;
   });
 });
 
-/* ================================
-   INCIDENT VERWIJDEREN
-================================ */
-function delIncident(id) {
-  remove(ref(db, "incidenten/" + id));
+/* --- INCIDENT VERWIJDEREN --- */
+window.delIncident = function(id){
+  remove(ref(db,"incidenten/"+id));
 }
 
-/* ================================
-   OVD LADEN
-================================ */
-onValue(ovdRef, (snap) => {
-  const box = document.getElementById("ovdList");
-  box.innerHTML = "";
+/* --- OVD TONEN --- */
+onValue(ovdRef,(snap)=>{
+  ovdList.innerHTML="";
 
-  snap.forEach((d) => {
-    const o = d.val();
-    box.innerHTML += `
+  snap.forEach(d=>{
+    const x=d.val();
+
+    ovdList.innerHTML += `
       <div class="row">
         <div>
-          <strong>${o.naam}</strong><br>
-          <small style="color:var(--muted)">${o.eenheid}</small>
+          <strong>${x.naam}</strong><br>
+          <small>${x.eenheid}</small>
         </div>
-        <div class="status-badge" style="background:${o.status=='Beschikbaar' ? 'var(--xmas-green)' : 'var(--xmas-red)'}">
-          ${o.status}
+        <div class="status-badge" style="background:${x.status=='Beschikbaar' ? 'var(--xmas-green)' : 'var(--xmas-red)'}">
+          ${x.status}
         </div>
       </div>
     `;
   });
 });
 
-/* ================================
-   NOODALARM OVERLAY
-================================ */
+/* --- NOODALARM --- */
 window.triggerAlert = function(){
-  document.getElementById("alertOverlay").style.display = "flex";
-};
-
+  alertOverlay.style.display="flex";
+}
 window.hideAlert = function(){
-  document.getElementById("alertOverlay").style.display = "none";
-};
+  alertOverlay.style.display="none";
+}
 </script>
 
 </body>
