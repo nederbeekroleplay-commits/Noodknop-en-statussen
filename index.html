@@ -1,192 +1,171 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Nederbeek — Meldkamer & VTA's</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nederbeek – Meldkamer (Admin)</title>
 
-<style>
-:root{
-  --bg:#001b35;--card:#07243d;--muted:#a9c2d6;--accent:#ffc600;--white:#ffffff;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--white)}
-.container{max-width:1200px;margin:18px auto;padding:18px}
-.header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.title h1{margin:0;font-size:20px}
-.title .sub{color:var(--muted);font-size:13px;margin-top:4px}
-.controls{display:flex;gap:8px;align-items:center}
-.btn{background:var(--accent);color:#001b35;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--white)}
-.grid{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-top:16px}
-@media(max-width:980px){.grid{grid-template-columns:1fr}}
-.card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,0.5)}
-.field{margin-top:10px}
-input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--white)}
-textarea{min-height:80px}
-.huge{font-size:18px;padding:14px;border-radius:12px}
-.nood{background:linear-gradient(180deg,#ff4d4f,#d32f2f);color:white;border:none}
-.small{color:var(--muted);font-size:13px}
-.ovd-list{max-height:420px;overflow:auto;margin-top:10px}
-.row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;margin-bottom:8px;background:#031726}
-.footer{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
-#alertOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:99999;background:rgba(150,0,0,0.95);color:white;text-align:center}
-</style>
+  <style>
+    :root{
+      --bg:#001b35;
+      --card:#07243d;
+      --muted:#a9c2d6;
+      --accent:#ffc600;
+      --danger:#c62828;
+      --ok:#2e7d32;
+      --white:#ffffff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Arial,Helvetica,sans-serif;
+      background:linear-gradient(180deg,#001b35,#002415);
+      color:var(--white);
+      overflow-x:hidden;
+    }
+    .container{max-width:1200px;margin:20px auto;padding:16px}
+    .card{background:var(--card);padding:14px;border-radius:14px;margin-bottom:14px;box-shadow:0 8px 18px rgba(0,0,0,.5)}
+    h1,h2,h3{margin:0 0 8px}
+    .muted{color:var(--muted);font-size:13px}
+    input,select,button{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#021a2d;color:white}
+    button{cursor:pointer;font-weight:700}
+    .btn{background:var(--accent);color:#001b35}
+    .btn.danger{background:var(--danger);color:white}
+    .btn.ghost{background:transparent}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;font-size:14px}
+
+    /* kerst */
+    .snowflake{position:fixed;top:-10px;color:white;font-size:14px;opacity:.8;animation:fall linear infinite;pointer-events:none}
+    @keyframes fall{to{transform:translateY(110vh)}}
+  </style>
 </head>
 <body>
+
 <div class="container">
-  <div class="header">
-    <div class="title">
-      <h1>Nederbeek — Meldkamer</h1>
-      <div class="sub">Werkende complete versie</div>
-    </div>
-    <button id="enableSound" class="btn">Enable sound</button>
+  <h1>🎄 Nederbeek Meldkamer</h1>
+  <div class="muted">Admin & live overzicht</div>
+
+  <!-- LOGIN -->
+  <div id="loginCard" class="card">
+    <h3>Inloggen</h3>
+    <input id="naam" placeholder="Naam" />
+    <input id="roep" placeholder="Roepnummer" style="margin-top:8px" />
+    <button id="loginBtn" class="btn" style="margin-top:10px">Inloggen</button>
   </div>
 
-  <div class="grid">
-    <div>
-      <div id="loginCard" class="card">
-        <h3>Inloggen</h3>
-        <input id="inputName" placeholder="Naam">
-        <input id="inputRoep" placeholder="Roepnummer (bv 34-001)">
-        <button id="btnLogin" class="btn" style="margin-top:10px">Inloggen</button>
-        <button id="btnLogout" class="btn ghost" style="display:none;margin-top:10px">Uitloggen</button>
-      </div>
-
-      <div id="controlCard" class="card" style="display:none;margin-top:12px">
-        <h3>Controlepaneel</h3>
-        <div id="currentUserText" class="small"></div>
-        <select id="statusSelect" class="field">
-          <option value="1">1 — Vrij</option>
-          <option value="2">2 — Aanrijdend</option>
-          <option value="3">3 — Ter plaatse</option>
-          <option value="8">8 — Uitdienst</option>
-        </select>
-        <button id="btnNood" class="huge nood" style="margin-top:12px">🚨 NOOD</button>
-      </div>
-
-      <div id="adminPanel" class="card" style="display:none;margin-top:12px">
-        <h3>Admin</h3>
-        <input id="adminNaam" placeholder="Naam">
-        <input id="adminRoep" placeholder="Roepnummer">
-        <select id="adminRol"><option value="eenheid">Eenheid</option><option value="admin">Admin</option></select>
-        <button id="btnAddUser" class="btn" style="margin-top:8px">Gebruiker toevoegen</button>
-        <div id="adminUserList" class="small" style="margin-top:8px"></div>
-      </div>
-    </div>
-
-    <aside>
+  <!-- DASHBOARD -->
+  <div id="dashboard" style="display:none">
+    <div class="grid">
       <div class="card">
-        <h3>Live overzicht</h3>
-        <div id="ovdList" class="ovd-list"></div>
+        <h3>👥 Ingelogde gebruikers</h3>
+        <table>
+          <thead><tr><th>Naam</th><th>Roep</th><th>Status</th><th>Tijd</th></tr></thead>
+          <tbody id="userTable"></tbody>
+        </table>
       </div>
-    </aside>
-  </div>
 
-  <div class="footer">© Nederbeek</div>
+      <div class="card">
+        <h3>🛑 Noodmelding</h3>
+        <button id="noodBtn" class="btn danger">ACTIVEER NOOD</button>
+        <button id="resetNood" class="btn ghost" style="margin-top:8px">Reset</button>
+        <div id="noodStatus" class="muted" style="margin-top:6px"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🧾 VTA overzicht</h3>
+      <table>
+        <thead><tr><th>Naam</th><th>Kenteken</th><th>Kenmerken</th></tr></thead>
+        <tbody id="vtaTable"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<div id="alertOverlay"><h1>🚨 NOODALARM 🚨</h1></div>
-<audio id="alarmAudio" loop><source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
-
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
-  authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
-  databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/",
-  projectId: "politie-nederbeek-fd6ff",
-  appId: "1:49112852872:web:9b235d5e5dfd2c89aaf23d"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const auth = firebase.auth();
+  const firebaseConfig = {
+    apiKey: "JOUW_API_KEY",
+    authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
+    databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "politie-nederbeek-fd6ff"
+  };
 
-const inputName = document.getElementById('inputName');
-const inputRoep = document.getElementById('inputRoep');
-const btnLogin = document.getElementById('btnLogin');
-const btnLogout = document.getElementById('btnLogout');
-const loginCard = document.getElementById('loginCard');
-const controlCard = document.getElementById('controlCard');
-const currentUserText = document.getElementById('currentUserText');
-const statusSelect = document.getElementById('statusSelect');
-const btnNood = document.getElementById('btnNood');
-const adminPanel = document.getElementById('adminPanel');
-const adminNaam = document.getElementById('adminNaam');
-const adminRoep = document.getElementById('adminRoep');
-const adminRol = document.getElementById('adminRol');
-const btnAddUser = document.getElementById('btnAddUser');
-const adminUserList = document.getElementById('adminUserList');
-const ovdList = document.getElementById('ovdList');
-const alertOverlay = document.getElementById('alertOverlay');
-const alarmAudio = document.getElementById('alarmAudio');
-const enableSound = document.getElementById('enableSound');
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const auth = firebase.auth();
 
-let current = null;
-let soundEnabled = false;
+  const loginCard = document.getElementById('loginCard');
+  const dashboard = document.getElementById('dashboard');
+  const userTable = document.getElementById('userTable');
+  const vtaTable = document.getElementById('vtaTable');
+  const noodStatus = document.getElementById('noodStatus');
 
-enableSound.onclick = () => {
-  alarmAudio.play().then(()=>{alarmAudio.pause();alarmAudio.currentTime=0;soundEnabled=true;enableSound.style.display='none';});
-};
+  document.getElementById('loginBtn').onclick = async () => {
+    const naam = document.getElementById('naam').value.trim();
+    const roep = document.getElementById('roep').value.trim();
+    if(!naam || !roep) return alert('Alles invullen');
 
-btnLogin.onclick = async () => {
-  const naam = inputName.value.trim();
-  const roep = inputRoep.value.trim();
-  if(!roep) return alert('Roepnummer verplicht');
-  const snap = await db.ref('toegestaanGebruikers/'+roep).once('value');
-  if(!snap.exists()) return alert('Geen toegang');
-  const allowed = snap.val();
-  await auth.signInAnonymously();
-  current = {naam: allowed.naam || naam, roep, rol: allowed.rol};
-  await db.ref('gebruikers/'+roep).set({naam:current.naam,roep,status:1,rol:current.rol,timestamp:Date.now()});
-  loginCard.style.display='none';controlCard.style.display='block';btnLogout.style.display='inline-block';
-  currentUserText.innerText = `${current.naam} (${roep}) — ${current.rol}`;
-  if(current.rol==='admin') adminPanel.style.display='block';
-};
+    await auth.signInAnonymously();
+    const uid = auth.currentUser.uid;
 
-btnLogout.onclick = async () => {
-  if(current) await db.ref('gebruikers/'+current.roep).remove();
-  location.reload();
-};
+    await db.ref('gebruikers/'+roep).set({
+      naam, roep, status: 'online', timestamp: Date.now()
+    });
 
-statusSelect.onchange = async () => {
-  if(!current) return;
-  if(statusSelect.value==='8') return btnLogout.click();
-  await db.ref('gebruikers/'+current.roep).update({status:Number(statusSelect.value),timestamp:Date.now()});
-};
+    loginCard.style.display='none';
+    dashboard.style.display='block';
+  };
 
-btnNood.onclick = async () => {
-  await db.ref('noodmelding').set({actief:true,door:current.roep,tijd:Date.now()});
-  if(soundEnabled) alarmAudio.play();
-};
-
-db.ref('noodmelding').on('value', snap => {
-  const d = snap.val();
-  if(d && d.actief){ alertOverlay.style.display='flex'; alarmAudio.play().catch(()=>{}); }
-  else{ alertOverlay.style.display='none'; alarmAudio.pause(); alarmAudio.currentTime=0; }
-});
-
-db.ref('gebruikers').on('value', snap => {
-  ovdList.innerHTML='';
-  Object.values(snap.val()||{}).forEach(u=>{
-    const div=document.createElement('div');div.className='row';div.textContent=`${u.naam} (${u.roep}) — ${u.status}`;ovdList.appendChild(div);
+  // live gebruikers
+  db.ref('gebruikers').on('value', snap => {
+    userTable.innerHTML='';
+    Object.values(snap.val()||{}).forEach(u=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${u.naam}</td><td>${u.roep}</td><td>${u.status}</td><td>${new Date(u.timestamp).toLocaleString()}</td>`;
+      userTable.appendChild(tr);
+    });
   });
-});
 
-btnAddUser.onclick = async ()=>{
-  if(current?.rol!=='admin') return;
-  await db.ref('toegestaanGebruikers/'+adminRoep.value).set({naam:adminNaam.value,rol:adminRol.value});
-};
+  // noodmelding
+  document.getElementById('noodBtn').onclick=()=>{
+    db.ref('noodmelding').set({actief:true,tijd:Date.now()});
+  };
+  document.getElementById('resetNood').onclick=()=>{
+    db.ref('noodmelding').set({actief:false});
+  };
 
-db.ref('toegestaanGebruikers').on('value', snap=>{
-  adminUserList.innerHTML='';
-  Object.entries(snap.val()||{}).forEach(([r,u])=>{
-    adminUserList.innerHTML += `<div>${u.naam} (${r}) — ${u.rol}</div>`;
+  db.ref('noodmelding').on('value',snap=>{
+    const d=snap.val();
+    noodStatus.textContent = d?.actief ? '🚨 ACTIEF' : 'Geen noodmelding';
   });
-});
+
+  // VTA lijst
+  db.ref('vtas').on('value', snap=>{
+    vtaTable.innerHTML='';
+    Object.values(snap.val()||{}).forEach(v=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${v.naam||''}</td><td>${v.kenteken||''}</td><td>${v.kenmerken||''}</td>`;
+      vtaTable.appendChild(tr);
+    });
+  });
+
+  // sneeuw
+  setInterval(()=>{
+    const s=document.createElement('div');
+    s.className='snowflake';
+    s.textContent='❄';
+    s.style.left=Math.random()*100+'vw';
+    s.style.animationDuration=(3+Math.random()*5)+'s';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),8000);
+  },300);
 </script>
 </body>
 </html>
