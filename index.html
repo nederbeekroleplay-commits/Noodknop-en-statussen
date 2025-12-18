@@ -111,6 +111,7 @@ const auth=firebase.auth();
 
 const ADMIN_ROEP='34-001';
 let currentRoep=null;
+let isAdminSession=false;
 
 // LOGIN
 document.getElementById('loginBtn').onclick=async()=>{
@@ -118,7 +119,15 @@ document.getElementById('loginBtn').onclick=async()=>{
   const roep=document.getElementById('roep').value.trim();
   if(!naam||!roep) return alert('Alles invullen');
 
-  await auth.signInAnonymously();
+  // controle: naam of roepnummer al actief
+  const snap = await db.ref('gebruikers').once('value');
+  const users = snap.val() || {};
+  for(const k in users){
+    if(users[k].realRoep === roep) return alert('Dit roepnummer is al ingelogd');
+    if(users[k].naam.toLowerCase() === naam.toLowerCase()) return alert('Deze naam is al ingelogd');
+  }
+
+  await auth.signInAnonymously();();
   currentRoep=roep;
 
   // admin vast vergrendeld
@@ -126,6 +135,14 @@ document.getElementById('loginBtn').onclick=async()=>{
 
   // admin roepnummer verbergen voor anderen
   const displayRoep = roep === ADMIN_ROEP ? 'ADMIN' : roep;
+
+  // log actie
+  db.ref('logs').push({
+    actie:'login',
+    naam,
+    roep,
+    tijd:Date.now()
+  });
 
   await db.ref('gebruikers/'+roep).set({
     naam,
@@ -137,7 +154,15 @@ document.getElementById('loginBtn').onclick=async()=>{
 
   document.getElementById('loginCard').style.display='none';
   document.getElementById('dashboard').style.display='block';
-  if(isAdmin) document.getElementById('adminPanel').style.display='block';
+  // admin panel standaard verborgen
+  if(isAdmin){
+    const btn=document.createElement('button');
+    btn.textContent='Schakel admin-modus';
+    btn.className='btn';
+    btn.style.marginTop='10px';
+    btn.onclick=()=>enableAdminMode();
+    document.getElementById('dashboard').prepend(btn);
+  }
 };
 
 // NOODKNOP
@@ -177,6 +202,12 @@ db.ref('gebruikers').on('value',snap=>{
     panel.appendChild(tr);
   });
 });
+
+function enableAdminMode(){
+  if(currentRoep!==ADMIN_ROEP) return;
+  isAdminSession=true;
+  document.getElementById('adminPanel').style.display='block';
+}
 
 window.setAdmin=function(roep){
   if(currentRoep!==ADMIN_ROEP) return alert('Geen rechten');
