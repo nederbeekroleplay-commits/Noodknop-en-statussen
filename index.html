@@ -7,11 +7,7 @@
 
 <style>
 :root{
-  --bg:#001b35;
-  --card:#07243d;
-  --muted:#a9c2d6;
-  --accent:#ffc600;
-  --white:#ffffff;
+  --bg:#001b35;--card:#07243d;--muted:#a9c2d6;--accent:#ffc600;--white:#ffffff;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--white)}
@@ -21,50 +17,20 @@ body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);
 .title .sub{color:var(--muted);font-size:13px;margin-top:4px}
 .controls{display:flex;gap:8px;align-items:center}
 .btn{background:var(--accent);color:#001b35;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--white)}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--white)}
 .grid{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-top:16px}
 @media(max-width:980px){.grid{grid-template-columns:1fr}}
 .card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,0.5)}
 .field{margin-top:10px}
-input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--white)}
-textarea{min-height:80px;resize:vertical}
-.select-status{font-weight:700}
+input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--white)}
+textarea{min-height:80px}
 .huge{font-size:18px;padding:14px;border-radius:12px}
 .nood{background:linear-gradient(180deg,#ff4d4f,#d32f2f);color:white;border:none}
 .small{color:var(--muted);font-size:13px}
 .ovd-list{max-height:420px;overflow:auto;margin-top:10px}
-.row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;margin-bottom:8px}
-.row .left{display:flex;gap:12px;align-items:center}
-.status-badge{min-width:120px;text-align:center;padding:8px;border-radius:8px;font-weight:700}
-.ts{font-size:12px;color:var(--muted)}
-.nav{display:flex;gap:8px;align-items:center;margin-left:8px}
-.link{color:var(--muted);text-decoration:none;padding:8px;border-radius:8px}
-.link.active{background:rgba(255,255,255,0.04);color:var(--white)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;margin-bottom:8px;background:#031726}
 .footer{margin-top:12px;color:var(--muted);font-size:13px;text-align:center}
-
-/* ALERT OVERLAY */
-#alertOverlay{
-  position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:99999;
-  background:linear-gradient(180deg,rgba(180,0,0,0.95),rgba(120,0,0,0.95));
-  color:white;text-align:center;padding:20px;cursor:pointer;
-  animation: pulse 0.8s infinite;
-}
-@keyframes pulse {0%{opacity:1}50%{opacity:0.2}100%{opacity:1}}
-#alertOverlay h2{font-size:48px;margin:8px}
-#alertOverlay p{font-size:20px;margin:6px}
-
-/* VTA table */
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
-.thumb{width:80px;height:60px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.06)}
-.form-inline{display:flex;gap:8px}
-.form-inline > *{flex:1}
-
-/* small responsive tweaks */
-@media(max-width:760px){
-  .form-inline{flex-direction:column}
-  .grid{grid-template-columns:1fr}
-}
+#alertOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:99999;background:rgba(150,0,0,0.95);color:white;text-align:center}
 </style>
 </head>
 <body>
@@ -72,145 +38,73 @@ textarea{min-height:80px;resize:vertical}
   <div class="header">
     <div class="title">
       <h1>Nederbeek — Meldkamer</h1>
-      <div class="sub">Realtime statussen • Noodknop • VTA beheer</div>
+      <div class="sub">Werkende complete versie</div>
     </div>
-
-    <div class="controls">
-      <nav class="nav" aria-label="Hoofdmenu">
-        <a href="#dashboard" class="link" id="navDashboard">Dashboard</a>
-        <a href="#vtas" class="link" id="navVtas">VTAs</a>
-      </nav>
-      <button id="enableSound" class="btn">Enable sound</button>
-    </div>
+    <button id="enableSound" class="btn">Enable sound</button>
   </div>
 
-  <!-- DASHBOARD content -->
-  <div id="pageDashboard" class="page">
-    <div class="grid">
-      <div>
-        <!-- LOGIN CARD -->
-        <div id="loginCard" class="card">
-          <h3>Inloggen</h3>
-          <div class="small">Vul naam en roepnummer in (bv. 34-101)</div>
-          <div class="field"><input id="inputName" placeholder="Naam"></div>
-          <div class="field"><input id="inputRoep" placeholder="Roepnummer"></div>
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <button id="btnLogin" class="btn">Inloggen</button>
-            <button id="btnLogout" class="btn ghost" style="display:none">Uitloggen</button>
-          </div>
-        </div>
-
-        <!-- CONTROL CARD -->
-        <div id="controlCard" class="card" style="display:none;margin-top:12px">
-          <h3>Controlepaneel</h3>
-          <div id="currentUserText" class="small" style="margin-bottom:8px"></div>
-
-          <div class="field">
-            <label class="small">Status (wijzigt meteen bij select)</label>
-            <select id="statusSelect" class="select-status">
-              <option value="1">1 — Inzetbaar, vrij</option>
-              <option value="2">2 — Aanrijdend naar de melding</option>
-              <option value="3">3 — Ter plaatse</option>
-              <option value="4">4 — Bezet, max 30 minuten</option>
-              <option value="5">5 — Transport aanvraag</option>
-              <option value="6">6 — Aanvraag OC</option>
-              <option value="7">7 — Spoed aanvraag OC</option>
-              <option value="8">8 — Uitdienst</option>
-            </select>
-          </div>
-
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <button id="btnToggleDienst" class="btn ghost">In / Uit dienst</button>
-            <button id="btnSetStatus" class="btn" style="display:none">Opslaan</button>
-          </div>
-
-          <div style="margin-top:14px">
-            <button id="btnNood" class="huge nood">🚨 NOODKNOP</button>
-          </div>
-
-          <div style="margin-top:12px">
-            <button id="btnResetNood" class="btn ghost">Reset nood (OVD)</button>
-            <button id="btnResetDienst" class="btn ghost">Reset dienst (wis alle gebruikers)</button>
-          </div>
-        </div>
-
-        <!-- ADMIN PANEL -->
-        <div id="adminPanel" class="card" style="display:none;margin-top:12px">
-          <h3>Admin paneel</h3>
-          <input id="adminNaam" placeholder="Naam">
-          <input id="adminRoep" placeholder="Roepnummer">
-          <select id="adminRol">
-            <option value="eenheid">Eenheid</option>
-            <option value="ovd">OVD</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button id="btnAddUser" class="btn">Opslaan</button>
-          <div id="adminUserList" style="margin-top:10px"></div>
-        </div>
+  <div class="grid">
+    <div>
+      <div id="loginCard" class="card">
+        <h3>Inloggen</h3>
+        <input id="inputName" placeholder="Naam">
+        <input id="inputRoep" placeholder="Roepnummer (bv 34-001)">
+        <button id="btnLogin" class="btn" style="margin-top:10px">Inloggen</button>
+        <button id="btnLogout" class="btn ghost" style="display:none;margin-top:10px">Uitloggen</button>
       </div>
 
-      <!-- RIGHT column -->
-      <aside>
-        <div class="card">
-          <h3>OVD / Live overzicht</h3>
-          <div class="small">Gesorteerd op status (1 → 8)</div>
-          <div id="ovdList" class="ovd-list" style="margin-top:10px"></div>
-        </div>
-      </aside>
+      <div id="controlCard" class="card" style="display:none;margin-top:12px">
+        <h3>Controlepaneel</h3>
+        <div id="currentUserText" class="small"></div>
+        <select id="statusSelect" class="field">
+          <option value="1">1 — Vrij</option>
+          <option value="2">2 — Aanrijdend</option>
+          <option value="3">3 — Ter plaatse</option>
+          <option value="8">8 — Uitdienst</option>
+        </select>
+        <button id="btnNood" class="huge nood" style="margin-top:12px">🚨 NOOD</button>
+      </div>
+
+      <div id="adminPanel" class="card" style="display:none;margin-top:12px">
+        <h3>Admin</h3>
+        <input id="adminNaam" placeholder="Naam">
+        <input id="adminRoep" placeholder="Roepnummer">
+        <select id="adminRol"><option value="eenheid">Eenheid</option><option value="admin">Admin</option></select>
+        <button id="btnAddUser" class="btn" style="margin-top:8px">Gebruiker toevoegen</button>
+        <div id="adminUserList" class="small" style="margin-top:8px"></div>
+      </div>
     </div>
+
+    <aside>
+      <div class="card">
+        <h3>Live overzicht</h3>
+        <div id="ovdList" class="ovd-list"></div>
+      </div>
+    </aside>
   </div>
 
-  <!-- VTAs page (tab) -->
-  <div id="pageVtas" class="page" style="display:none">
-    <!-- VTA content zoals eerder -->
-  </div>
-
-  <div class="footer">© Nederbeek — Meldkamer</div>
+  <div class="footer">© Nederbeek</div>
 </div>
 
-<!-- ALERT OVERLAY -->
-<div id="alertOverlay" title="Klik om te resetten">
-  <div>
-    <h2>🚨 NOODALARM 🚨</h2>
-    <p id="alertDetail">—</p>
-    <div style="margin-top:18px">
-      <button id="closeAlert" class="btn" style="background:#fff;color:#001b35">Stop alarm</button>
-    </div>
-  </div>
-</div>
+<div id="alertOverlay"><h1>🚨 NOODALARM 🚨</h1></div>
+<audio id="alarmAudio" loop><source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
 
-<!-- AUDIO: harde alarm -->
-<audio id="alarmAudio" loop preload="auto">
-  <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
-</audio>
-
-<!-- FIREBASE v8 compat -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <script>
-/* ======================
-   Firebase Config
-====================== */
 const firebaseConfig = {
-  apiKey: "JE_API_KEY_HIER",
-  authDomain: "JE_AUTH_DOMAIN_HIER",
-  databaseURL: "JE_DATABASE_URL_HIER",
-  projectId: "JE_PROJECT_ID_HIER",
-  storageBucket: "JE_STORAGE_BUCKET_HIER",
-  messagingSenderId: "JE_SENDER_ID_HIER",
-  appId: "JE_APP_ID_HIER"
+  apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
+  authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
+  databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/",
+  projectId: "politie-nederbeek-fd6ff",
+  appId: "1:49112852872:web:9b235d5e5dfd2c89aaf23d"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
-const storage = firebase.storage();
 
-/* ======================
-   DOM refs
-====================== */
 const inputName = document.getElementById('inputName');
 const inputRoep = document.getElementById('inputRoep');
 const btnLogin = document.getElementById('btnLogin');
@@ -218,121 +112,81 @@ const btnLogout = document.getElementById('btnLogout');
 const loginCard = document.getElementById('loginCard');
 const controlCard = document.getElementById('controlCard');
 const currentUserText = document.getElementById('currentUserText');
-
+const statusSelect = document.getElementById('statusSelect');
+const btnNood = document.getElementById('btnNood');
 const adminPanel = document.getElementById('adminPanel');
 const adminNaam = document.getElementById('adminNaam');
 const adminRoep = document.getElementById('adminRoep');
 const adminRol = document.getElementById('adminRol');
 const btnAddUser = document.getElementById('btnAddUser');
 const adminUserList = document.getElementById('adminUserList');
+const ovdList = document.getElementById('ovdList');
+const alertOverlay = document.getElementById('alertOverlay');
+const alarmAudio = document.getElementById('alarmAudio');
+const enableSound = document.getElementById('enableSound');
 
 let current = null;
+let soundEnabled = false;
 
-/* ======================
-   Login met toegestaanGebruikers
-====================== */
-btnLogin.addEventListener('click', async () => {
-  const naamInput = inputName.value.trim();
-  const roep = inputRoep.value.trim();
-  if (!roep) return alert('Roepnummer verplicht');
-
-  try {
-    const snap = await db.ref('toegestaanGebruikers/' + roep).once('value');
-    if (!snap.exists()) return alert('❌ Geen toegang');
-    const allowed = snap.val();
-
-    await auth.signInAnonymously();
-
-    current = {
-      naam: allowed.naam || naamInput || 'ONBEKEND',
-      roep,
-      rol: allowed.rol || 'eenheid'
-    };
-
-    await db.ref('gebruikers/' + roep).set({
-      naam: current.naam,
-      roep,
-      rol: current.rol,
-      status: 1,
-      dienst: 'in',
-      timestamp: Date.now()
-    });
-
-    loginCard.style.display = 'none';
-    controlCard.style.display = 'block';
-    btnLogout.style.display = 'inline-block';
-
-    currentUserText.innerText = `${current.naam} (${roep}) — ${current.rol.toUpperCase()}`;
-
-    localStorage.setItem('nb_user', JSON.stringify(current));
-
-    if (current.rol === 'admin') adminPanel.style.display = 'block';
-
-  } catch(e){
-    alert('Login mislukt');
-  }
-});
-
-/* Logout */
-btnLogout.addEventListener('click', async () => {
-  if (!current) return;
-  await db.ref('gebruikers/' + current.roep).remove();
-  current=null;
-  loginCard.style.display='block';
-  controlCard.style.display='none';
-  btnLogout.style.display='none';
-  adminPanel.style.display='none';
-  localStorage.removeItem('nb_user');
-});
-
-/* ======================
-   Admin logica
-====================== */
-btnAddUser.addEventListener('click', async () => {
-  if (!current || current.rol !== 'admin') return;
-  await db.ref('toegestaanGebruikers/' + adminRoep.value).set({
-    naam: adminNaam.value || 'ONBEKEND',
-    rol: adminRol.value
-  });
-  adminNaam.value = '';
-  adminRoep.value = '';
-});
-
-db.ref('toegestaanGebruikers').on('value', snap => {
-  const data = snap.val() || {};
-  adminUserList.innerHTML = '';
-  Object.keys(data).forEach(roep => {
-    const u = data[roep];
-    adminUserList.innerHTML += `
-      <div>
-        ${u.naam} (${roep}) — ${u.rol}
-        <button onclick="removeUser('${roep}')">X</button>
-      </div>
-    `;
-  });
-});
-
-window.removeUser = async function(roep){
-  await db.ref('toegestaanGebruikers/' + roep).remove();
+enableSound.onclick = () => {
+  alarmAudio.play().then(()=>{alarmAudio.pause();alarmAudio.currentTime=0;soundEnabled=true;enableSound.style.display='none';});
 };
 
-/* ======================
-   Restore local user
-====================== */
-(function restore(){
-  const s = localStorage.getItem('nb_user');
-  if (s){
-    try{
-      const u = JSON.parse(s);
-      current = u;
-      loginCard.style.display='none';
-      controlCard.style.display='block';
-      btnLogout.style.display='inline-block';
-      currentUserText.innerText = `${current.naam} (${current.roep}) — ${current.rol.toUpperCase()}`;
-      if (current.rol === 'admin') adminPanel.style.display='block';
-    }catch(e){}
-  }
-})();
+btnLogin.onclick = async () => {
+  const naam = inputName.value.trim();
+  const roep = inputRoep.value.trim();
+  if(!roep) return alert('Roepnummer verplicht');
+  const snap = await db.ref('toegestaanGebruikers/'+roep).once('value');
+  if(!snap.exists()) return alert('Geen toegang');
+  const allowed = snap.val();
+  await auth.signInAnonymously();
+  current = {naam: allowed.naam || naam, roep, rol: allowed.rol};
+  await db.ref('gebruikers/'+roep).set({naam:current.naam,roep,status:1,rol:current.rol,timestamp:Date.now()});
+  loginCard.style.display='none';controlCard.style.display='block';btnLogout.style.display='inline-block';
+  currentUserText.innerText = `${current.naam} (${roep}) — ${current.rol}`;
+  if(current.rol==='admin') adminPanel.style.display='block';
+};
+
+btnLogout.onclick = async () => {
+  if(current) await db.ref('gebruikers/'+current.roep).remove();
+  location.reload();
+};
+
+statusSelect.onchange = async () => {
+  if(!current) return;
+  if(statusSelect.value==='8') return btnLogout.click();
+  await db.ref('gebruikers/'+current.roep).update({status:Number(statusSelect.value),timestamp:Date.now()});
+};
+
+btnNood.onclick = async () => {
+  await db.ref('noodmelding').set({actief:true,door:current.roep,tijd:Date.now()});
+  if(soundEnabled) alarmAudio.play();
+};
+
+db.ref('noodmelding').on('value', snap => {
+  const d = snap.val();
+  if(d && d.actief){ alertOverlay.style.display='flex'; alarmAudio.play().catch(()=>{}); }
+  else{ alertOverlay.style.display='none'; alarmAudio.pause(); alarmAudio.currentTime=0; }
+});
+
+db.ref('gebruikers').on('value', snap => {
+  ovdList.innerHTML='';
+  Object.values(snap.val()||{}).forEach(u=>{
+    const div=document.createElement('div');div.className='row';div.textContent=`${u.naam} (${u.roep}) — ${u.status}`;ovdList.appendChild(div);
+  });
+});
+
+btnAddUser.onclick = async ()=>{
+  if(current?.rol!=='admin') return;
+  await db.ref('toegestaanGebruikers/'+adminRoep.value).set({naam:adminNaam.value,rol:adminRol.value});
+};
+
+db.ref('toegestaanGebruikers').on('value', snap=>{
+  adminUserList.innerHTML='';
+  Object.entries(snap.val()||{}).forEach(([r,u])=>{
+    adminUserList.innerHTML += `<div>${u.naam} (${r}) — ${u.rol}</div>`;
+  });
+});
 </script>
 </body>
 </html>
