@@ -3,49 +3,56 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nederbeek – Meldkamer (Admin)</title>
+  <title>Nederbeek – Meldkamer</title>
 
   <style>
     :root{
-      --bg:#001b35;
-      --card:#07243d;
-      --muted:#a9c2d6;
-      --accent:#ffc600;
-      --danger:#c62828;
-      --ok:#2e7d32;
-      --white:#ffffff;
+      --bg:#001b35;--card:#07243d;--muted:#a9c2d6;--accent:#ffc600;--danger:#c62828;--white:#fff;--christmas:#b30000;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:Inter,Arial,Helvetica,sans-serif;
+      font-family:Arial,Helvetica,sans-serif;
       background:linear-gradient(180deg,#001b35,#002415);
       color:var(--white);
       overflow-x:hidden;
     }
-    .container{max-width:1200px;margin:20px auto;padding:16px}
-    .card{background:var(--card);padding:14px;border-radius:14px;margin-bottom:14px;box-shadow:0 8px 18px rgba(0,0,0,.5)}
-    h1,h2,h3{margin:0 0 8px}
-    .muted{color:var(--muted);font-size:13px}
-    input,select,button{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:#021a2d;color:white}
+    .container{max-width:1100px;margin:20px auto;padding:16px}
+    .card{
+      background:var(--card);
+      padding:14px;
+      border-radius:14px;
+      margin-bottom:14px;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 0 25px rgba(255,0,0,.15);
+    }
+    h1{display:flex;align-items:center;gap:10px}
+    h1::after{content:"🎄"}
+    input,button{width:100%;padding:10px;border-radius:10px;border:none}
     button{cursor:pointer;font-weight:700}
     .btn{background:var(--accent);color:#001b35}
-    .btn.danger{background:var(--danger);color:white}
-    .btn.ghost{background:transparent}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .danger{background:var(--danger);color:white}
+    .muted{color:var(--muted);font-size:13px}
     table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;font-size:14px}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1);text-align:left}
 
     /* kerst */
+    .lights{display:flex;gap:8px;justify-content:center;margin-bottom:10px}
+    .light{width:12px;height:12px;border-radius:50%;animation:blink 1.5s infinite}
+    .l1{background:red}.l2{background:gold}.l3{background:lime}.l4{background:cyan}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
     .snowflake{position:fixed;top:-10px;color:white;font-size:14px;opacity:.8;animation:fall linear infinite;pointer-events:none}
     @keyframes fall{to{transform:translateY(110vh)}}
   </style>
 </head>
 <body>
-
 <div class="container">
+  <div class="lights">
+    <div class="light l1"></div><div class="light l2"></div><div class="light l3"></div><div class="light l4"></div>
+    <div class="light l1"></div><div class="light l2"></div><div class="light l3"></div><div class="light l4"></div>
+  </div>
   <h1>🎄 Nederbeek Meldkamer</h1>
-  <div class="muted">Admin & live overzicht</div>
 
   <!-- LOGIN -->
   <div id="loginCard" class="card">
@@ -53,32 +60,35 @@
     <input id="naam" placeholder="Naam" />
     <input id="roep" placeholder="Roepnummer" style="margin-top:8px" />
     <button id="loginBtn" class="btn" style="margin-top:10px">Inloggen</button>
+    <div class="muted" style="margin-top:6px">Admin is vergrendeld (34-001)</div>
   </div>
 
   <!-- DASHBOARD -->
   <div id="dashboard" style="display:none">
-    <div class="grid">
-      <div class="card">
-        <h3>👥 Ingelogde gebruikers</h3>
-        <table>
-          <thead><tr><th>Naam</th><th>Roep</th><th>Status</th><th>Tijd</th></tr></thead>
-          <tbody id="userTable"></tbody>
-        </table>
-      </div>
 
-      <div class="card">
-        <h3>🛑 Noodmelding</h3>
-        <button id="noodBtn" class="btn danger">ACTIVEER NOOD</button>
-        <button id="resetNood" class="btn ghost" style="margin-top:8px">Reset</button>
-        <div id="noodStatus" class="muted" style="margin-top:6px"></div>
-      </div>
+    <!-- NOODKNOP -->
+    <div class="card">
+      <h3>🚨 Noodmelding</h3>
+      <button id="noodBtn" class="danger">ACTIVEER NOOD</button>
+      <button id="resetNood" class="btn" style="margin-top:8px;display:none">NOOD UIT</button>
+      <div id="noodStatus" class="muted" style="margin-top:6px"></div>
     </div>
 
-    <div class="card">
-      <h3>🧾 VTA overzicht</h3>
+    <!-- ADMIN PANEL -->
+    <div id="adminPanel" class="card" style="display:none">
+      <h3>🛡 Admin beheer</h3>
       <table>
-        <thead><tr><th>Naam</th><th>Kenteken</th><th>Kenmerken</th></tr></thead>
-        <tbody id="vtaTable"></tbody>
+        <thead><tr><th>Naam</th><th>Roep</th><th>Admin</th></tr></thead>
+        <tbody id="adminUsers"></tbody>
+      </table>
+    </div>
+
+    <!-- GEBRUIKERS -->
+    <div class="card">
+      <h3>👥 Ingelogde gebruikers</h3>
+      <table>
+        <thead><tr><th>Naam</th><th>Roep</th><th>Tijd</th></tr></thead>
+        <tbody id="userTable"></tbody>
       </table>
     </div>
   </div>
@@ -88,84 +98,90 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
 <script>
-  const firebaseConfig = {
-    apiKey: "JOUW_API_KEY",
-    authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
-    databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "politie-nederbeek-fd6ff"
-  };
+const firebaseConfig={
+  apiKey:"JOUW_API_KEY",
+  authDomain:"politie-nederbeek-fd6ff.firebaseapp.com",
+  databaseURL:"https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"politie-nederbeek-fd6ff"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const auth=firebase.auth();
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const auth = firebase.auth();
+const ADMIN_ROEP='34-001';
+let currentRoep=null;
 
-  const loginCard = document.getElementById('loginCard');
-  const dashboard = document.getElementById('dashboard');
-  const userTable = document.getElementById('userTable');
-  const vtaTable = document.getElementById('vtaTable');
-  const noodStatus = document.getElementById('noodStatus');
+// LOGIN
+document.getElementById('loginBtn').onclick=async()=>{
+  const naam=naamInput.value= document.getElementById('naam').value.trim();
+  const roep=document.getElementById('roep').value.trim();
+  if(!naam||!roep) return alert('Alles invullen');
 
-  document.getElementById('loginBtn').onclick = async () => {
-    const naam = document.getElementById('naam').value.trim();
-    const roep = document.getElementById('roep').value.trim();
-    if(!naam || !roep) return alert('Alles invullen');
+  await auth.signInAnonymously();
+  currentRoep=roep;
 
-    await auth.signInAnonymously();
-    const uid = auth.currentUser.uid;
+  // admin vast vergrendeld
+  const isAdmin = roep===ADMIN_ROEP;
 
-    await db.ref('gebruikers/'+roep).set({
-      naam, roep, status: 'online', timestamp: Date.now()
-    });
+  // admin roepnummer verbergen voor anderen
+  const displayRoep = roep === ADMIN_ROEP ? 'ADMIN' : roep;
 
-    loginCard.style.display='none';
-    dashboard.style.display='block';
-  };
-
-  // live gebruikers
-  db.ref('gebruikers').on('value', snap => {
-    userTable.innerHTML='';
-    Object.values(snap.val()||{}).forEach(u=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${u.naam}</td><td>${u.roep}</td><td>${u.status}</td><td>${new Date(u.timestamp).toLocaleString()}</td>`;
-      userTable.appendChild(tr);
-    });
+  await db.ref('gebruikers/'+roep).set({
+    naam,
+    roep: displayRoep,
+    realRoep: roep,
+    isAdmin,
+    timestamp: Date.now()
   });
 
-  // noodmelding
-  document.getElementById('noodBtn').onclick=()=>{
-    db.ref('noodmelding').set({actief:true,tijd:Date.now()});
-  };
-  document.getElementById('resetNood').onclick=()=>{
-    db.ref('noodmelding').set({actief:false});
-  };
+  document.getElementById('loginCard').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  if(isAdmin) document.getElementById('adminPanel').style.display='block';
+};
 
-  db.ref('noodmelding').on('value',snap=>{
-    const d=snap.val();
-    noodStatus.textContent = d?.actief ? '🚨 ACTIEF' : 'Geen noodmelding';
+// NOODKNOP
+document.getElementById('noodBtn').onclick=()=>{
+  db.ref('noodmelding').set({actief:true,door:currentRoep,tijd:Date.now()});
+};
+document.getElementById('resetNood').onclick=()=>{
+  db.ref('noodmelding').set({actief:false});
+};
+
+// NOOD STATUS
+db.ref('noodmelding').on('value',snap=>{
+  const d=snap.val();
+  const actief=d?.actief;
+  document.getElementById('noodStatus').textContent=actief?`ACTIEF door ${d.door}`:'Geen noodmelding';
+  document.getElementById('resetNood').style.display=actief?'block':'none';
+});
+
+// LIVE GEBRUIKERS
+db.ref('gebruikers').on('value',snap=>{
+  const tb=document.getElementById('userTable');tb.innerHTML='';
+  Object.values(snap.val()||{}).forEach(u=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${u.naam}</td><td>${u.isAdmin ? 'ADMIN' : u.roep}</td><td>${new Date(u.timestamp).toLocaleString()}</td>`;
+    tb.appendChild(tr);
   });
+});
 
-  // VTA lijst
-  db.ref('vtas').on('value', snap=>{
-    vtaTable.innerHTML='';
-    Object.values(snap.val()||{}).forEach(v=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>${v.naam||''}</td><td>${v.kenteken||''}</td><td>${v.kenmerken||''}</td>`;
-      vtaTable.appendChild(tr);
-    });
+// ADMIN: andere admins aanwijzen
+db.ref('gebruikers').on('value',snap=>{
+  const panel=document.getElementById('adminUsers');
+  panel.innerHTML='';
+  Object.values(snap.val()||{}).forEach(u=>{
+    const disabled=u.roep===ADMIN_ROEP?'disabled':'';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${u.naam}</td><td>${u.roep}</td><td><button ${disabled} onclick="setAdmin('${u.roep}')">Maak admin</button></td>`;
+    panel.appendChild(tr);
   });
+});
 
-  // sneeuw
-  setInterval(()=>{
-    const s=document.createElement('div');
-    s.className='snowflake';
-    s.textContent='❄';
-    s.style.left=Math.random()*100+'vw';
-    s.style.animationDuration=(3+Math.random()*5)+'s';
-    document.body.appendChild(s);
-    setTimeout(()=>s.remove(),8000);
-  },300);
+window.setAdmin=function(roep){
+  if(currentRoep!==ADMIN_ROEP) return alert('Geen rechten');
+  db.ref('gebruikers/'+roep+'/isAdmin').set(true);
+};
 </script>
 </body>
 </html>
