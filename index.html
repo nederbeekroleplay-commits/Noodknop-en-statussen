@@ -7,63 +7,63 @@
 
 <style>
 :root {
-  --accent:#ffc600;
-  --white:#fff;
-  --muted:#a9c2d6;
-  --card-bg: rgba(0,0,0,0.6);
+ --accent:#ffc600;
+ --white:#fff;
+ --muted:#a9c2d6;
+ --card-bg: rgba(0,0,0,0.6);
 }
 
 body {
-  margin:0;
-  font-family: Arial, sans-serif;
-  background: #001b35;
-  color: var(--white);
-  overflow-x: hidden;
+ margin:0;
+ font-family: Arial, sans-serif;
+ color: var(--white);
+ background: #001b35;
+ overflow-x: hidden;
 }
 
 /* Container en cards */
 .container{
-  max-width:1200px;
-  margin:20px auto;
-  padding:20px;
-  backdrop-filter: blur(5px);
+ max-width:1200px;
+ margin:20px auto;
+ padding:20px;
+ backdrop-filter: blur(5px);
 }
 .card{
-  background: var(--card-bg);
-  padding:16px;
-  border-radius:12px;
-  margin-bottom:12px;
+ background: var(--card-bg);
+ padding:16px;
+ border-radius:12px;
+ margin-bottom:12px;
 }
 input, select, textarea{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  border:none;
-  margin-top:8px;
-  color:#001b35;
+ width:100%;
+ padding:10px;
+ border-radius:8px;
+ border:none;
+ margin-top:8px;
+ color:#001b35;
 }
 .btn{
-  background: var(--accent);
-  color:#001b35;
-  border:none;
-  padding:10px 14px;
-  border-radius:8px;
-  font-weight:bold;
-  cursor:pointer;
+ background: var(--accent);
+ color:#001b35;
+ border:none;
+ padding:10px 14px;
+ border-radius:8px;
+ font-weight: bold;
+ cursor:pointer;
 }
 .btn.ghost{
-  background:transparent;
-  color: var(--white);
-  border:1px solid rgba(255,255,255,.4);
+ background:transparent;
+ color: var(--white);
+ border:1px solid rgba(255,255,255,.4);
 }
 .row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
-  background: rgba(255,255,255,0.1);
-  border-radius:8px;
-  margin-bottom:6px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:10px;
+ background: rgba(255,255,255,0.1);
+ border-radius:8px;
+ margin-bottom:6px;
 }
 .small{color:var(--muted); font-size:13px;}
 .huge{padding:18px; font-size:20px; border-radius:12px;}
@@ -72,11 +72,11 @@ table{width:100%; border-collapse:collapse;}
 th,td{padding:8px; border-bottom:1px solid rgba(255,255,255,.15);}
 .vta-table th{background: rgba(0,0,0,0.6);}
 #alertOverlay{
-  position:fixed; inset:0; display:none;
-  background: rgba(120,0,0,0.85);
-  align-items:center; justify-content:center;
-  text-align:center;
-  z-index:9999;
+ position:fixed; inset:0; display:none;
+ background: rgba(120,0,0,0.85);
+ align-items:center; justify-content:center;
+ text-align:center;
+ z-index:9999;
 }
 
 /* 🎄 Kerstanimatie */
@@ -85,14 +85,13 @@ th,td{padding:8px; border-bottom:1px solid rgba(255,255,255,.15);}
   width: 15px;
   height: 15px;
   border-radius:50%;
-  background-color: yellow;
   box-shadow: 0 0 10px #ff0,0 0 20px #ff0;
   animation: blink 1.5s infinite alternate;
 }
 @keyframes blink{
-  0%{opacity:0.2;}
-  50%{opacity:1;}
-  100%{opacity:0.2;}
+ 0%{opacity:0.2;}
+ 50%{opacity:1;}
+ 100%{opacity:0.2;}
 }
 .snowflake{
   position: fixed;
@@ -106,7 +105,6 @@ th,td{padding:8px; border-bottom:1px solid rgba(255,255,255,.15);}
  0% {transform:translateY(0);}
  100% {transform:translateY(110vh);}
 }
-/* 🎅 Optionele kerstman icoon */
 .santa{
   position: fixed;
   width:40px;
@@ -115,15 +113,14 @@ th,td{padding:8px; border-bottom:1px solid rgba(255,255,255,.15);}
   animation: fly linear infinite;
 }
 @keyframes fly{
-  0%{transform: translateX(-50px) translateY(50px);}
-  100%{transform: translateX(110vw) translateY(300px);}
+ 0%{transform: translateX(-50px) translateY(50px);}
+ 100%{transform: translateX(110vw) translateY(200px);}
 }
 </style>
 </head>
-
 <body>
-<div class="container">
 
+<div class="container">
 <h1 style="text-align:center;">🎄 Nederbeek — Meldkamer Kerst 🎄</h1>
 
 <div id="loginCard" class="card">
@@ -180,7 +177,6 @@ th,td{padding:8px; border-bottom:1px solid rgba(255,255,255,.15);}
   <tbody id="vtaTable"></tbody>
  </table>
 </div>
-
 </div>
 
 <div id="alertOverlay">
@@ -201,12 +197,117 @@ th,td{padding:8px; border-bottom:1px solid rgba(255,255,255,.15);}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <script>
-// 🔹 Firebase config + login/status/VTA/nood hier
-// Gebruik je originele werkende code
+// 🔹 Firebase config (gebruik je eigen keys)
+firebase.initializeApp({
+ apiKey:"YOUR_API_KEY",
+ authDomain:"YOUR_AUTH_DOMAIN",
+ databaseURL:"YOUR_DB_URL"
+});
+
+const db=firebase.database(),auth=firebase.auth(),storage=firebase.storage();
+const ADMIN_ROEP="34-001";
+let current=null,adminMode=false;
+
+/* LOGIN */
+btnLogin.onclick=async()=>{
+ const naam=inputName.value.trim(),roep=inputRoep.value.trim();
+ if(!naam||!roep)return alert("Vul alles in");
+ if((await db.ref("blockedUsers/"+roep).once("value")).exists())
+  return alert("❌ Je bent geblokkeerd");
+ if((await db.ref("gebruikers/"+roep).once("value")).exists())
+  return alert("Roepnummer al actief");
+ await auth.signInAnonymously();
+ const isAdmin=roep===ADMIN_ROEP;
+ current={naam,roep,isAdmin};
+ await db.ref("gebruikers/"+roep).set({naam,roep:isAdmin?"ADMIN":roep,realRoep:roep,status:1,tijd:Date.now()});
+ loginCard.style.display="none";
+ controlCard.style.display="block";
+ currentUser.innerHTML=`Ingelogd als <b>${naam}</b> (${isAdmin?"ADMIN":roep})`;
+ if(isAdmin)btnAdminMode.style.display="block";
+};
+
+/* LOGOUT */
+btnLogout.onclick=async()=>{
+ await db.ref("gebruikers/"+current.roep).remove();
+ location.reload();
+};
+
+/* STATUS */
+statusSelect.onchange=async()=>{
+ if(statusSelect.value==8){
+  await db.ref("gebruikers/"+current.roep).remove();
+  location.reload();return;
+ }
+ await db.ref("gebruikers/"+current.roep+"/status").set(+statusSelect.value);
+};
+
+/* ADMIN */
+btnAdminMode.onclick=()=>{adminMode=true; alert("Admin-modus actief");};
+btnResetDienst.onclick=async()=>{
+ if(!adminMode)return alert("Alleen admin");
+ if(confirm("Alles resetten?")) await db.ref("gebruikers").remove();
+};
+
+/* NOOD */
+btnNood.onclick=async()=>{
+ await db.ref("nood").set({actief:true,door:current.roep,tijd:Date.now()});
+};
+closeAlert.onclick=async()=>{await db.ref("nood").set({actief:false});};
+
+/* LISTENERS */
+db.ref("nood").on("value",s=>{
+ const d=s.val();
+ if(d && d.actief){
+  alertOverlay.style.display="flex";
+  alertDetail.innerText="Door: "+d.door;
+  alarmAudio.play().catch(()=>{});
+ }else{
+  alertOverlay.style.display="none";
+  alarmAudio.pause();alarmAudio.currentTime=0;
+ }
+});
+
+db.ref("gebruikers").on("value",s=>{
+ ovdList.innerHTML="";
+ Object.values(s.val()||{}).forEach(u=>{
+  const r=document.createElement("div");r.className="row";
+  r.innerHTML = `<div>${u.naam}</div><div>${adminMode?(u.realRoep||u.roep):u.roep}</div>`;
+  ovdList.appendChild(r);
+ });
+});
+
+/* VTA */
+btnAddVta.onclick=async()=>{
+ const ref=db.ref("vtas").push();
+ const rec={id:ref.key,naam:vtaNaam.value||"ONBEKEND",kenteken:vtaKenteken.value||"ONBEKEND",info:vtaInfo.value||"",tijd:Date.now()};
+ if(vtaFoto.files[0]){
+  const up=storage.ref("vtas/"+rec.id).put(vtaFoto.files[0]);
+  up.on("state_changed",null,null,async()=>{
+   rec.foto=await up.snapshot.ref.getDownloadURL();
+   await ref.set(rec);
+  });
+ }else await ref.set(rec);
+};
+
+db.ref("vtas").on("value",s=>{
+ vtaTable.innerHTML="";
+ Object.values(s.val()||{}).forEach(v=>{
+  if(vtaSearch.value && !JSON.stringify(v).toLowerCase().includes(vtaSearch.value.toLowerCase()))return;
+  const tr=document.createElement("tr");
+  tr.innerHTML = `
+   <td>${v.foto ? `<img src="${v.foto}">` : `<span class="small">Geen</span>`}</td>
+   <td>${v.naam}</td>
+   <td>${v.kenteken}</td>
+   <td class="small">${v.info}</td>
+   <td><button class="btn ghost" onclick="db.ref('vtas/${v.id}').remove()">Verwijder</button></td>
+  `;
+  vtaTable.appendChild(tr);
+ });
+});
 </script>
 
 <script>
-// 🎅 Kerstanimatie JS
+// 🎄 Sneeuwvlokken
 function createSnow(){ 
  const flake=document.createElement('div');
  flake.className='snowflake';
@@ -215,22 +316,22 @@ function createSnow(){
  flake.style.animationDuration=(5+Math.random()*5)+'s';
  flake.style.fontSize=(12+Math.random()*24)+'px';
  document.body.appendChild(flake);
- setTimeout(()=>flake.remove(),10000);
+ setTimeout(()=>flake.remove(),15000);
 }
 setInterval(createSnow,200);
 
-// 🎄 Lichtjes
-for(let i=0;i<30;i++){
+// 🎄 Kerstlichtjes
+for(let i=0;i<40;i++){
  const light=document.createElement('div');
  light.className='christmas-light';
- light.style.top=Math.random()*50+'px';
- light.style.left=Math.random()*window.innerWidth+'px';
+ light.style.top=(Math.random()*50)+'px';
+ light.style.left=(Math.random()*window.innerWidth)+'px';
  light.style.backgroundColor=["#ff0","#f00","#0f0","#0ff","#f0f"][Math.floor(Math.random()*5)];
  document.body.appendChild(light);
 }
 
-// 🎅 Santa animatie
-for(let i=0;i<3;i++){
+// 🎅 Kerstman
+for(let i=0;i<2;i++){
  const santa=document.createElement('img');
  santa.src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Santa_Claus_icon.svg/1200px-Santa_Claus_icon.svg.png"; 
  santa.className='santa';
@@ -239,6 +340,5 @@ for(let i=0;i<3;i++){
  document.body.appendChild(santa);
 }
 </script>
-
 </body>
 </html>
