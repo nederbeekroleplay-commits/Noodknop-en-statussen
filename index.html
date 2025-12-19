@@ -26,6 +26,13 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:none;marg
 .nood{background:linear-gradient(180deg,#ff4d4f,#b00000);color:white}
 table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
+
+.vta-table th{background:#031726}
+.vta-table img{
+ width:80px;height:60px;object-fit:cover;
+ border-radius:6px;border:1px solid rgba(255,255,255,.2)
+}
+
 #alertOverlay{
  position:fixed;inset:0;display:none;
  background:rgba(120,0,0,.95);
@@ -94,8 +101,16 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 <div class="card">
  <h3>VTAs</h3>
  <input id="vtaSearch" placeholder="Zoeken...">
- <table>
-  <thead><tr><th>Naam</th><th>Kenteken</th><th>Info</th><th>Actie</th></tr></thead>
+ <table class="vta-table">
+  <thead>
+   <tr>
+    <th>Foto</th>
+    <th>Naam</th>
+    <th>Kenteken</th>
+    <th>Signalement</th>
+    <th>Actie</th>
+   </tr>
+  </thead>
   <tbody id="vtaTable"></tbody>
  </table>
 </div>
@@ -109,6 +124,10 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
   <button class="btn" id="closeAlert">Stop alarm</button>
  </div>
 </div>
+
+<audio id="alarmAudio" loop>
+ <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg" type="audio/ogg">
+</audio>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -128,11 +147,7 @@ let current=null,adminMode=false;
 
 /* DOM */
 const el=id=>document.getElementById(id);
-const inputName=el("inputName"),inputRoep=el("inputRoep"),btnLogin=el("btnLogin");
-const loginCard=el("loginCard"),controlCard=el("controlCard"),currentUser=el("currentUser");
-const statusSelect=el("statusSelect"),btnLogout=el("btnLogout"),btnNood=el("btnNood");
-const ovdList=el("ovdList"),btnAdminMode=el("btnAdminMode"),btnResetDienst=el("btnResetDienst");
-const alertOverlay=el("alertOverlay"),alertDetail=el("alertDetail"),closeAlert=el("closeAlert");
+const alarmAudio=el("alarmAudio");
 
 /* LOGIN */
 btnLogin.onclick=async()=>{
@@ -186,8 +201,14 @@ closeAlert.onclick=async()=>{await db.ref("nood").set({actief:false});};
 /* LISTENERS */
 db.ref("nood").on("value",s=>{
  const d=s.val();
- alertOverlay.style.display=d&&d.actief?"flex":"none";
- if(d)alertDetail.innerText="Door: "+d.door;
+ if(d&&d.actief){
+  alertOverlay.style.display="flex";
+  alertDetail.innerText="Door: "+d.door;
+  alarmAudio.play().catch(()=>{});
+ }else{
+  alertOverlay.style.display="none";
+  alarmAudio.pause();alarmAudio.currentTime=0;
+ }
 });
 
 db.ref("gebruikers").on("value",s=>{
@@ -200,9 +221,6 @@ db.ref("gebruikers").on("value",s=>{
 });
 
 /* VTA */
-const vtaNaam=el("vtaNaam"),vtaKenteken=el("vtaKenteken"),vtaInfo=el("vtaInfo");
-const vtaFoto=el("vtaFoto"),btnAddVta=el("btnAddVta"),vtaTable=el("vtaTable"),vtaSearch=el("vtaSearch");
-
 btnAddVta.onclick=async()=>{
  const ref=db.ref("vtas").push();
  const rec={id:ref.key,naam:vtaNaam.value||"ONBEKEND",kenteken:vtaKenteken.value||"ONBEKEND",info:vtaInfo.value||"",tijd:Date.now()};
@@ -220,8 +238,12 @@ db.ref("vtas").on("value",s=>{
  Object.values(s.val()||{}).forEach(v=>{
   if(vtaSearch.value && !JSON.stringify(v).toLowerCase().includes(vtaSearch.value.toLowerCase()))return;
   const tr=document.createElement("tr");
-  tr.innerHTML=`<td>${v.naam}</td><td>${v.kenteken}</td><td>${v.info}</td>
-  <td><button class="btn ghost" onclick="db.ref('vtas/${v.id}').remove()">X</button></td>`;
+  tr.innerHTML=`
+  <td>${v.foto?`<img src="${v.foto}">`:`<span class="small">Geen</span>`}</td>
+  <td>${v.naam}</td>
+  <td>${v.kenteken}</td>
+  <td class="small">${v.info}</td>
+  <td><button class="btn ghost" onclick="db.ref('vtas/${v.id}').remove()">Verwijder</button></td>`;
   vtaTable.appendChild(tr);
  });
 });
