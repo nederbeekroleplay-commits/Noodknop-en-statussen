@@ -7,144 +7,117 @@
 
 <style>
 :root {
-  --bg: #001b35;
-  --card: rgba(0,0,0,0.8);
-  --muted: #a9c2d6;
-  --accent: #ffc600;
-  --white: #fff;
-  --highlight: #ff4d4f;
+ --bg:#001b35;
+ --card:rgba(0,0,0,0.7);
+ --white:#fff;
+ --accent:#ffc600;
+ --muted:#a9c2d6;
 }
 *{box-sizing:border-box}
 
-/* Kerst achtergrondfoto */
-body {
-  margin:0;
-  font-family:Arial;
-  color:var(--white);
-  background: url("https://cdn.pixabay.com/photo/2019/12/08/22/33/christmas-4684900_1920.jpg") center/cover no-repeat; /* echte kerst achtergrond foto */ 
-  overflow-x:hidden;
+/* 🌟 Achtergrond kerst foto */
+body{
+ margin:0;
+ font-family:Arial;
+ background:url("https://cdn.pixabay.com/photo/2016/11/29/04/03/snow-1867271_1920.jpg") center/cover no-repeat; /* sneeuwlandschap kerstig */ :contentReference[oaicite:1]{index=1}
+ color:var(--white);
+ overflow-x:hidden;
 }
 
-/* Sneeuwvlokken animatie */
-.snowflake {
-  position: fixed;
-  top: -50px;
-  color: white;
-  font-size: 1.2em;
-  pointer-events: none;
-  animation: fall linear infinite;
+/* ❄ Sneeuwvlokken animatie */
+.snowflake{
+ position:fixed;
+ top:-50px;
+ color:white;
+ font-size:1.5em;
+ pointer-events:none;
+ animation:fall linear infinite;
 }
-@keyframes fall {
-  0% { transform: translateY(0px); }
-  100% { transform: translateY(110vh); }
-}
-
-.container {
-  max-width:1200px;
-  margin:20px auto;
-  padding:20px;
-  position:relative;
-  background:rgba(0,0,0,0.4);
-  border-radius:12px;
+@keyframes fall{
+ 0%{transform:translateY(0);}
+ 100%{transform:translateY(110vh);}
 }
 
-.card {
-  background: var(--card);
-  padding:16px;
-  border-radius:12px;
-  margin-bottom:12px;
-  position:relative;
+.container{
+ max-width:1200px;
+ margin:20px auto;
+ padding:20px;
+ background:rgba(0,0,0,0.5);
+ border-radius:12px;
 }
 
-.btn {
-  background:var(--accent);
-  color:#001b35;
-  border:none;
-  padding:10px 14px;
-  border-radius:8px;
-  font-weight:bold;
-  cursor:pointer;
-}
-.btn.ghost {
-  background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2);
+.card{
+ background:var(--card);
+ padding:16px;
+ margin-bottom:12px;
+ border-radius:12px;
+ position:relative;
 }
 
-input,select,textarea {
-  width:100%;
-  padding:10px;
-  border-radius:8px;
-  border:none;
-  margin-top:8px;
+.btn{
+ background:var(--accent);
+ color:#001b35;
+ border:none;
+ padding:10px 14px;
+ border-radius:8px;
+ font-weight:bold;
+ cursor:pointer;
 }
 
-.row {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px;
-  background:rgba(0,0,0,0.6);
-  border-radius:8px;
-  margin-bottom:6px;
+.btn.ghost{
+ background:transparent;
+ color:#fff;
+ border:1px solid rgba(255,255,255,.2);
 }
 
-.small {
-  color:var(--muted);
-  font-size:13px;
+input,select,textarea{
+ width:100%;
+ padding:10px;
+ border-radius:8px;
+ border:none;
+ margin-top:8px;
 }
 
-.huge {
-  padding:18px;
-  font-size:20px;
-  border-radius:12px;
+.row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:10px;
+ background:rgba(0,0,0,0.6);
+ border-radius:8px;
+ margin-bottom:6px;
 }
 
-.nood {
-  background:linear-gradient(180deg,var(--highlight),#b00000);
-  color:white;
-}
+.small{color:var(--muted);font-size:13px}
+.huge{padding:18px;font-size:20px;border-radius:12px}
+.nood{background:linear-gradient(180deg,#ff4d4f,#b00000);color:white}
 
-table {
-  width:100%;
-  border-collapse:collapse;
-}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
+.vta-table th{background:rgba(0,0,0,0.6)}
 
-th,td {
-  padding:8px;
-  border-bottom:1px solid rgba(255,255,255,.1);
-}
-
-.vta-table th {
-  background:rgba(0,0,0,0.7);
-}
-
-#alertOverlay {
-  position:fixed;
-  inset:0;
-  display:none;
-  background:rgba(120,0,0,.95);
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  z-index:9999;
-  animation:pulse .8s infinite;
-}
-
-@keyframes pulse {
-  0%{opacity:1}50%{opacity:.3}100%{opacity:1}
+#alertOverlay{
+ position:fixed;inset:0;display:none;
+ background:rgba(120,0,0,.95);
+ align-items:center;justify-content:center;
+ text-align:center;z-index:9999;
 }
 </style>
 </head>
+
 <body>
 
 <div class="container">
 
-<h2 style="text-align:center; font-size:32px; margin-bottom:20px;">🎄 Nederbeek — Meldkamer Kerst 🎄</h2>
+<h1 style="text-align:center; font-size:32px; margin-bottom:20px;">
+ 🎄 Nederbeek — Meldkamer Kerst 🎄
+</h1>
 
 <div id="loginCard" class="card">
  <h3>Inloggen</h3>
  <input id="inputName" placeholder="Naam">
  <input id="inputRoep" placeholder="Roepnummer">
- <button id="btnLogin" class="btn" style="margin-top:10px">Inloggen</button>
+ <button id="btnLogin" class="btn">Inloggen</button>
 </div>
 
 <div id="controlCard" class="card" style="display:none">
@@ -180,6 +153,7 @@ th,td {
  <div id="ovdList"></div>
 </div>
 
+<!-- Admin panel -->
 <div id="adminPanel" class="card" style="display:none">
  <h3>🔐 Admin panel — Gebruikers</h3>
  <div id="adminUserList"></div>
@@ -201,9 +175,7 @@ th,td {
  <input id="vtaSearch" placeholder="Zoeken...">
  <table class="vta-table">
   <thead>
-   <tr>
-    <th>Foto</th><th>Naam</th><th>Kenteken</th><th>Signalement</th><th>Actie</th>
-   </tr>
+   <tr><th>Foto</th><th>Naam</th><th>Kenteken</th><th>Signalement</th><th>Actie</th></tr>
   </thead>
   <tbody id="vtaTable"></tbody>
  </table>
@@ -229,24 +201,67 @@ th,td {
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <script>
-// (dezelfde Firebase login, user‑status, admin, VTA, nood functies als eerder gegeven)
-// — deze blijven **onveranderd** van de code die je al hebt
-// kopieer die logic hier onder jouw eerdere melding
+// — Firebase config (zelfde als wat je al had)
+firebase.initializeApp({
+ apiKey:"AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
+ authDomain:"politie-nederbeek-fd6ff.firebaseapp.com",
+ databaseURL:"https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/"
+});
+
+const db=firebase.database(),auth=firebase.auth(),storage=firebase.storage();
+const ADMIN_ROEP="34-001";
+let current=null,adminMode=false;
+
+const STATUS_MAP={
+ 1:{t:"Vrij",c:"#2ecc71"},
+ 2:{t:"Aanrijdend",c:"#f1c40f"},
+ 3:{t:"Ter plaatse",c:"#3498db"},
+ 4:{t:"Bezet",c:"#e67e22"},
+ 8:{t:"Uit dienst",c:"#7f8c8d"}
+};
+
+/* LOGIN */
+btnLogin.onclick=async()=>{
+ const naam=inputName.value.trim(), roep=inputRoep.value.trim();
+ if(!naam||!roep)return alert("Vul alles in");
+
+ if((await db.ref("blockedUsers/"+roep).once("value")).exists())
+  return alert("❌ Je bent geblokkeerd");
+
+ if((await db.ref("gebruikers/"+roep).once("value")).exists())
+  return alert("Roepnummer al actief");
+
+ await auth.signInAnonymously();
+ const isAdmin = roep===ADMIN_ROEP;
+ current={naam,roep,isAdmin};
+
+ await db.ref("gebruikers/"+roep).set({
+  naam,roep:isAdmin?"ADMIN":roep,realRoep:roep,status:1
+ });
+
+ loginCard.style.display="none";
+ controlCard.style.display="block";
+ currentUser.innerHTML=`Ingelogd als <b>${naam}</b> (${isAdmin?"ADMIN":roep})`;
+ if(isAdmin)btnAdminMode.style.display="block";
+};
+
+// … (de rest blijft exact zoals in je originele meldkamer code, admin panel, VTA, noodknop enz.)
+
 </script>
 
+<!-- Sneeuw animatie -->
 <script>
-// ⭐ Sneeuwvlokken animatie
 function createSnow(){
- const flake = document.createElement('div');
- flake.className = 'snowflake';
- flake.innerText = '❄';
- flake.style.left = Math.random() * window.innerWidth + 'px';
- flake.style.animationDuration = (5 + Math.random()*7) + 's';
- flake.style.fontSize = (12 + Math.random()*24) + 'px';
+ const flake=document.createElement('div');
+ flake.className='snowflake';
+ flake.innerText='❄';
+ flake.style.left=Math.random()*window.innerWidth+'px';
+ flake.style.animationDuration=(5+Math.random()*5)+'s';
+ flake.style.fontSize=(12+Math.random()*24)+'px';
  document.body.appendChild(flake);
- setTimeout(() => flake.remove(), 10000);
+ setTimeout(()=>flake.remove(),10000);
 }
-setInterval(createSnow, 300);
+setInterval(createSnow,300);
 </script>
 
 </body>
