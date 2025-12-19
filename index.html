@@ -15,49 +15,35 @@
  --highlight:#ff4d4f;
 }
 *{box-sizing:border-box}
-body{
- margin:0;font-family:Arial;background:var(--bg);color:var(--white);overflow-x:hidden;
+body{margin:0;font-family:Arial;background:var(--bg);color:var(--white);overflow-x:hidden}
+
+/* Kerstlichtjes banner bovenaan */
+#banner {
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:60px;
+  background:url('https://cdn.pixabay.com/photo/2016/12/19/13/20/christmas-tree-1912433_960_720.jpg') center/cover;
+  opacity:0.7;
+  z-index:2;
 }
-/* Achtergrond sneeuw */
-body::before{
- content:'';
- position:fixed;
- inset:0;
- pointer-events:none;
- background:url('https://i.imgur.com/4YVw6fG.png') repeat top center;
- opacity:0.4;
- z-index:0;
+
+/* Sneeuw overlay */
+#snowOverlay {
+  pointer-events:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:url('https://www.pngkit.com/png/detail/38-380659_overlay-png-image-snow.png') repeat; /* sneeuw PNG overlay */ :contentReference[oaicite:1]{index=1}
+  opacity:0.5;
+  z-index:1;
 }
-/* Sneeuwvlokken container */
-.snowflake{
- position:fixed;
- top:-50px;
- z-index:10;
- pointer-events:none;
- font-size:1.2em;
- color:white;
- animation:fall linear infinite;
-}
-@keyframes fall{
- 0%{transform:translateY(0px);}
- 100%{transform:translateY(110vh);}
-}
+
 .container{
  max-width:1200px;
- margin:20px auto;
+ margin:80px auto 20px; /* banner ruimte */
  padding:20px;
  position:relative;
- z-index:1;
-}
-.container::before{
- content:'';
- position:absolute;
- top:-10px;
- left:0;
- width:100%;
- height:50px;
- background:url('https://i.imgur.com/yXzKJsh.png') repeat-x;
- z-index:3;
+ z-index:2;
 }
 .card{
  background:var(--card);
@@ -67,33 +53,19 @@ body::before{
  position:relative;
  overflow:hidden;
 }
-/* Ornament rechtsboven op card */
 .card::before{
  content:'';
  position:absolute;
- top:10px;
- right:10px;
- width:30px;
- height:30px;
- background:url('https://i.imgur.com/3U8iD2J.png') no-repeat center center;
- background-size:contain;
- z-index:2;
+ top:8px;
+ right:8px;
+ width:28px;height:28px;
+ background:url('https://cdn.pixabay.com/photo/2013/07/13/10/07/christmas-158132_1280.png') no-repeat center/contain;
 }
-/* Kerst logo bovenaan */
 #logo{
  display:block;
- margin:0 auto 10px;
- width:120px;
+ margin:0 auto 12px;
+ width:100px;
 }
-/* Naam kerst omkadering */
-.naam-kerst{
- border:2px solid #ffc600;
- border-radius:12px;
- padding:2px 6px;
- background:rgba(255,198,0,0.1);
- display:inline-block;
-}
-/* Rest styling */
 .btn{background:var(--accent);color:#001b35;border:none;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer}
 .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2)}
 input,select,textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px}
@@ -116,7 +88,10 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 </head>
 <body>
 
-<img id="logo" src="https://i.imgur.com/xm9yE8A.png" alt="Kerstlogo">
+<div id="banner"></div> 
+<div id="snowOverlay"></div> <!-- sneeuw overlay -->
+
+<img id="logo" src="https://cdn.pixabay.com/photo/2013/07/13/10/07/christmas-158131_1280.png" alt="Kerstlogo"> <!-- kerstboom PNG -->
 
 <div class="container">
 
@@ -141,7 +116,7 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
  </select>
 
  <button id="btnAdminMode" class="btn ghost" style="display:none;margin-top:8px">
-  🔐 Admin-modus
+  🔐 Admin‑modus
  </button>
 
  <button id="btnNood" class="btn huge nood" style="margin-top:10px">
@@ -162,7 +137,6 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
  <div id="ovdList"></div>
 </div>
 
-<!-- ADMIN PANEL -->
 <div id="adminPanel" class="card" style="display:none">
  <h3>🔐 Admin panel — Gebruikers</h3>
  <div id="adminUserList"></div>
@@ -216,6 +190,7 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <script>
+// ——— Firebase Init ———
 firebase.initializeApp({
  apiKey:"AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
  authDomain:"politie-nederbeek-fd6ff.firebaseapp.com",
@@ -234,167 +209,91 @@ const STATUS_MAP={
  8:{t:"Uit dienst",c:"#7f8c8d"}
 };
 
-/* LOGIN */
+// ——— LOGIN ———
 btnLogin.onclick=async()=>{
- const naam=inputName.value.trim();
- const roep=inputRoep.value.trim();
- if(!naam||!roep)return alert("Vul alles in");
+ const naam=inputName.value.trim(), roep=inputRoep.value.trim();
+ if(!naam||!roep) return alert("Vul alles in");
 
  if((await db.ref("blockedUsers/"+roep).once("value")).exists())
-  return alert("❌ Je bent geblokkeerd door een admin");
+  return alert("❌ Geblokkeerd");
 
  if((await db.ref("gebruikers/"+roep).once("value")).exists())
   return alert("Roepnummer al actief");
 
  await auth.signInAnonymously();
- const isAdmin=roep===ADMIN_ROEP;
- current={naam,roep,isAdmin};
+ const isAdmin = roep===ADMIN_ROEP;
+ current = {naam,roep,isAdmin};
 
  await db.ref("gebruikers/"+roep).set({
-  naam,roep:isAdmin?"ADMIN":roep,realRoep:roep,status:1,tijd:Date.now()
+  naam, roep:isAdmin?"ADMIN":roep, realRoep:roep, status:1, tijd:Date.now()
  });
 
  loginCard.style.display="none";
  controlCard.style.display="block";
- currentUser.innerHTML=`Ingelogd als <span class="naam-kerst"><b>${naam}</b></span> (${isAdmin?"ADMIN":roep})`;
- if(isAdmin)btnAdminMode.style.display="block";
+ currentUser.innerHTML = `Ingelogd als <b>${naam}</b> (${isAdmin?"ADMIN":roep})`;
+ if(isAdmin) btnAdminMode.style.display="block";
 };
 
-/* LOGOUT */
+// ——— Logout + Status ———
 btnLogout.onclick=async()=>{
  await db.ref("gebruikers/"+current.roep).remove();
  location.reload();
 };
-
-/* STATUS */
 statusSelect.onchange=async()=>{
  if(statusSelect.value==8){
   await db.ref("gebruikers/"+current.roep).remove();
-  location.reload();return;
- }
- await db.ref("gebruikers/"+current.roep+"/status").set(+statusSelect.value);
+  location.reload();
+ } else await db.ref("gebruikers/"+current.roep+"/status").set(+statusSelect.value);
 };
 
-/* ADMIN PANEL */
-btnAdminMode.onclick=()=>{
- adminMode=true;
- adminPanel.style.display="block";
- alert("Admin-modus actief");
-};
+// ——— Admin blokkeer ———
+btnAdminMode.onclick=()=>{ adminMode=true; adminPanel.style.display="block"; alert("Admin actief"); };
+function blockUser(r,n){ const reden=prompt("Reden blokkering?"); if(!reden)return; db.ref("blockedUsers/"+r).set({naam:n,reden,tijd:Date.now()}); db.ref("gebruikers/"+r).remove(); }
+function unblockUser(r){ if(!confirm("Deblokkeer?"))return; db.ref("blockedUsers/"+r).remove(); }
 
-function blockUser(roep,naam){
- const reden=prompt("Reden blokkering:");
- if(!reden)return;
- db.ref("blockedUsers/"+roep).set({naam,reden,tijd:Date.now()});
- db.ref("gebruikers/"+roep).remove();
-}
-
-function unblockUser(roep){
- if(!confirm("Deblokkeer gebruiker?"))return;
- db.ref("blockedUsers/"+roep).remove();
-}
-
-/* LIVE OVERZICHT */
+// ——— Listeners ———
 db.ref("gebruikers").on("value",s=>{
- ovdList.innerHTML="";
- adminUserList.innerHTML="";
+ ovdList.innerHTML=""; adminUserList.innerHTML="";
  Object.values(s.val()||{}).forEach(u=>{
   const st=STATUS_MAP[u.status]||{t:"Onbekend",c:"#ccc"};
-  const row=document.createElement("div");
-  row.className="row";
-  row.innerHTML=`
-   <div><span class="naam-kerst"><b>${u.naam}</b></span><br><span class="small">${adminMode?(u.realRoep||u.roep):u.roep}</span></div>
-   <div style="background:${st.c};padding:6px 10px;border-radius:8px;color:#001b35">
-    ${u.status} — ${st.t}
-   </div>
-  `;
-  ovdList.appendChild(row);
+  const div=document.createElement("div"); div.className="row";
+  div.innerHTML=`
+   <div><b>${u.naam}</b><br><span class="small">${adminMode?(u.realRoep||u.roep):u.roep}</span></div>
+   <div style="background:${st.c};padding:6px 10px;border-radius:8px;color:#001b35">${u.status} — ${st.t}</div>`;
+  ovdList.appendChild(div);
 
   if(adminMode){
-   const div=document.createElement("div");
-   div.className="row";
-   div.innerHTML=`
-    <div>${u.naam} (${u.realRoep})</div>
-    <button class="btn ghost" onclick="blockUser('${u.realRoep}','${u.naam}')">⛔ Blokkeer</button>
-   `;
-   adminUserList.appendChild(div);
+   const row2=document.createElement("div"); row2.className="row";
+   row2.innerHTML=`<div>${u.naam} (${u.realRoep})</div><button class="btn ghost" onclick="blockUser('${u.realRoep}','${u.naam}')">⛔ Blokkeer</button>`;
+   adminUserList.appendChild(row2);
   }
  });
 });
 
-/* BLOCKED USERS */
 db.ref("blockedUsers").on("value",s=>{
  blockedList.innerHTML="";
- Object.entries(s.val()||{}).forEach(([roep,u])=>{
-  const div=document.createElement("div");
-  div.className="row";
-  div.innerHTML=`
-   <div>${u.naam} (${roep})<br><span class="small">${u.reden}</span></div>
-   <button class="btn ghost" onclick="unblockUser('${roep}')">✅ Deblokkeer</button>
-  `;
+ Object.entries(s.val()||{}).forEach(([r,u])=>{
+  const div=document.createElement("div"); div.className="row";
+  div.innerHTML=`<div>${u.naam} (${r})<br><span class="small">${u.reden}</span></div> <button class="btn ghost" onclick="unblockUser('${r}')">✅ Deblokkeer</button>`;
   blockedList.appendChild(div);
+ });
 });
 
-/* NOOD */
-btnNood.onclick=async()=>{
- await db.ref("nood").set({actief:true,door:current.roep,tijd:Date.now()});
-};
+// ——— Nood ———
+btnNood.onclick=async()=>{await db.ref("nood").set({actief:true,door:current.roep,tijd:Date.now()});};
 closeAlert.onclick=async()=>{await db.ref("nood").set({actief:false});};
+db.ref("nood").on("value",s=>{const d=s.val(); if(d&&d.actief){alertOverlay.style.display="flex";alertDetail.innerText="Door: "+d.door;alarmAudio.play().catch(()=>{});} else {alertOverlay.style.display="none";alarmAudio.pause();alarmAudio.currentTime=0;}});
 
-/* LISTENERS NOOD */
-db.ref("nood").on("value",s=>{
- const d=s.val();
- if(d&&d.actief){
-  alertOverlay.style.display="flex";
-  alertDetail.innerText="Door: "+d.door;
-  alarmAudio.play().catch(()=>{});
- }else{
-  alertOverlay.style.display="none";
-  alarmAudio.pause();alarmAudio.currentTime=0;
- }
-});
-
-/* VTA */
+// ——— VTA ———
 btnAddVta.onclick=async()=>{
  const ref=db.ref("vtas").push();
  const rec={id:ref.key,naam:vtaNaam.value||"ONBEKEND",kenteken:vtaKenteken.value||"ONBEKEND",info:vtaInfo.value||"",tijd:Date.now()};
  if(vtaFoto.files[0]){
   const up=storage.ref("vtas/"+rec.id).put(vtaFoto.files[0]);
-  up.on("state_changed",null,null,async()=>{
-   rec.foto=await up.snapshot.ref.getDownloadURL();
-   await ref.set(rec);
-  });
- }else await ref.set(rec);
+  up.on("state_changed",null,null,async()=>{rec.foto=await up.snapshot.ref.getDownloadURL();await ref.set(rec);});
+ } else await ref.set(rec);
 };
-
-db.ref("vtas").on("value",s=>{
- vtaTable.innerHTML="";
- Object.values(s.val()||{}).forEach(v=>{
-  if(vtaSearch.value && !JSON.stringify(v).toLowerCase().includes(vtaSearch.value.toLowerCase()))return;
-  const tr=document.createElement("tr");
-  tr.innerHTML=`
-   <td>${v.foto ? `<img src="${v.foto}">` : `<span class="small">Geen</span>`}</td>
-   <td>${v.naam}</td>
-   <td>${v.kenteken}</td>
-   <td class="small">${v.info}</td>
-   <td><button class="btn ghost" onclick="db.ref('vtas/${v.id}').remove()">Verwijder</button></td>
-  `;
-  vtaTable.appendChild(tr);
- });
-});
-
-/* Sneeuwvlokken animatie */
-function createSnow(){
- const flake=document.createElement('div');
- flake.className='snowflake';
- flake.innerText='❄';
- flake.style.left=Math.random()*window.innerWidth+'px';
- flake.style.animationDuration=(5+Math.random()*5)+'s';
- flake.style.fontSize=(10+Math.random()*20)+'px';
- document.body.appendChild(flake);
- setTimeout(()=>flake.remove(),10000);
-}
-setInterval(createSnow,300);
+db.ref("vtas").on("value",s=>{vtaTable.innerHTML="";Object.values(s.val()||{}).forEach(v=>{if(vtaSearch.value && !JSON.stringify(v).toLowerCase().includes(vtaSearch.value.toLowerCase()))return; const tr=document.createElement("tr"); tr.innerHTML=`<td>${v.foto?`<img src="${v.foto}">`:`<span class="small">Geen</span>`}</td><td>${v.naam}</td><td>${v.kenteken}</td><td class="small">${v.info}</td><td><button class="btn ghost" onclick="db.ref('vtas/${v.id}').remove()">Verwijder</button></td>`; vtaTable.appendChild(tr);});});
 </script>
 
 </body>
