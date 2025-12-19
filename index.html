@@ -11,22 +11,11 @@
 }
 *{box-sizing:border-box}
 body{
- margin:0;
- font-family:Arial;
- background:var(--bg);
- color:var(--white);
- overflow-x:hidden;
+ margin:0;font-family:Arial;background:var(--bg);color:var(--white);overflow-x:hidden
 }
-
-/* ===== ORIGINELE STYLING ===== */
 body::before{
- content:'';
- position:fixed;
- inset:0;
- pointer-events:none;
- background:url('https://i.imgur.com/6QJjYMe.png') repeat;
- opacity:.07;
- z-index:0
+ content:'';position:fixed;inset:0;pointer-events:none;
+ background:url('https://i.imgur.com/6QJjYMe.png') repeat;opacity:.07;z-index:0
 }
 .container{max-width:1200px;margin:20px auto;padding:20px;position:relative;z-index:1}
 .card{background:var(--card);padding:16px;border-radius:12px;margin-bottom:12px}
@@ -49,48 +38,19 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 }
 @keyframes pulse{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
 
-/* ===== 🎄 KERST TOEVOEGINGEN (VEILIG) ===== */
-
-/* Kerstlichtjes bovenaan */
+/* 🎄 Kerst */
 #kerst-lichtjes{
- position:fixed;
- top:0;left:0;right:0;
- height:32px;
- z-index:5;
- pointer-events:none;
- background:
- repeating-linear-gradient(
- 90deg,
- red 0 8px,
- gold 8px 16px,
- lime 16px 24px,
- cyan 24px 32px
- );
- animation: blinkLights 1.5s infinite alternate;
+ position:fixed;top:0;left:0;right:0;height:32px;z-index:5;pointer-events:none;
+ background:repeating-linear-gradient(90deg,red 0 8px,gold 8px 16px,lime 16px 24px,cyan 24px 32px);
+ animation:blink 1.5s infinite alternate
 }
-@keyframes blinkLights{
- from{opacity:.4}
- to{opacity:1}
-}
-
-/* Sneeuwvlokken */
-.snow{
- position:fixed;
- top:-20px;
- color:white;
- pointer-events:none;
- z-index:4;
- animation: fall linear forwards;
-}
-@keyframes fall{
- to{transform:translateY(110vh);}
-}
+@keyframes blink{from{opacity:.4}to{opacity:1}}
+.snow{position:fixed;top:-20px;color:white;pointer-events:none;z-index:4;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh)}}
 </style>
 </head>
 
 <body>
-
-<!-- 🎄 Kerstlichtjes -->
 <div id="kerst-lichtjes"></div>
 
 <div class="container">
@@ -115,26 +75,32 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
   <option value="8">8 — Uit dienst</option>
  </select>
 
- <button id="btnAdminMode" class="btn ghost" style="display:none;margin-top:8px">
-  🔐 Admin-modus
- </button>
-
- <button id="btnNood" class="btn huge nood" style="margin-top:10px">
-  🚨 NOODKNOP
- </button>
-
- <button id="btnResetDienst" class="btn ghost" style="margin-top:8px">
-  🔄 Reset dienst
- </button>
-
- <button id="btnLogout" class="btn ghost" style="margin-top:10px">
-  Uitloggen
- </button>
+ <button id="btnAdminMode" class="btn ghost" style="display:none;margin-top:8px">🔐 Admin-modus</button>
+ <button id="btnNood" class="btn huge nood" style="margin-top:10px">🚨 NOODKNOP</button>
+ <button id="btnResetDienst" class="btn ghost" style="margin-top:8px">🔄 Reset dienst</button>
+ <button id="btnLogout" class="btn ghost" style="margin-top:10px">Uitloggen</button>
 </div>
 
 <div class="card">
  <h3>Live overzicht</h3>
  <div id="ovdList"></div>
+</div>
+
+<div class="card">
+ <h3>VTA toevoegen</h3>
+ <input id="vtaNaam" placeholder="Naam">
+ <input id="vtaKenteken" placeholder="Kenteken">
+ <textarea id="vtaInfo" placeholder="Signalement"></textarea>
+ <input type="file" id="vtaFoto">
+ <button id="btnAddVta" class="btn" style="margin-top:8px">Opslaan VTA</button>
+</div>
+
+<div class="card">
+ <h3>VTAs</h3>
+ <table>
+  <thead><tr><th>Naam</th><th>Kenteken</th><th>Info</th><th></th></tr></thead>
+  <tbody id="vtaTable"></tbody>
+ </table>
 </div>
 
 </div>
@@ -154,18 +120,20 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <script>
-/* ===== ORIGINELE FIREBASE CODE — ONGEREPT ===== */
 firebase.initializeApp({
  apiKey:"AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
  authDomain:"politie-nederbeek-fd6ff.firebaseapp.com",
  databaseURL:"https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/"
 });
 
-const db=firebase.database(),auth=firebase.auth();
+const db=firebase.database(),auth=firebase.auth(),storage=firebase.storage();
 const ADMIN_ROEP="34-001";
 let current=null,adminMode=false;
+
+const statusTxt={1:"Vrij",2:"Aanrijdend",3:"Ter plaatse",4:"Bezet"};
 
 btnLogin.onclick=async()=>{
  const naam=inputName.value.trim(),roep=inputRoep.value.trim();
@@ -183,7 +151,7 @@ btnLogin.onclick=async()=>{
 
  loginCard.style.display="none";
  controlCard.style.display="block";
- currentUser.innerHTML = `Ingelogd als <b>${naam}</b> (${isAdmin?"ADMIN":roep})`;
+ currentUser.innerHTML=`Ingelogd als <b>${naam}</b> (${isAdmin?"ADMIN":roep})`;
  if(isAdmin)btnAdminMode.style.display="block";
 };
 
@@ -192,43 +160,53 @@ btnLogout.onclick=async()=>{
  location.reload();
 };
 
-statusSelect.onchange=async()=>{
- if(statusSelect.value==8){
-  await db.ref("gebruikers/"+current.roep).remove();
-  location.reload();return;
- }
- await db.ref("gebruikers/"+current.roep+"/status").set(+statusSelect.value);
+statusSelect.onchange=()=>db.ref("gebruikers/"+current.roep+"/status").set(+statusSelect.value);
+
+btnAdminMode.onclick=()=>adminMode=true;
+btnResetDienst.onclick=async()=>{
+ if(!adminMode)return alert("Alleen admin");
+ if(confirm("Alles resetten?"))await db.ref("gebruikers").remove();
 };
 
-btnNood.onclick=async()=>{
- await db.ref("nood").set({actief:true,door:current.roep,tijd:Date.now()});
-};
-closeAlert.onclick=async()=>{await db.ref("nood").set({actief:false});};
+btnNood.onclick=()=>db.ref("nood").set({actief:true,door:current.roep});
+closeAlert.onclick=()=>db.ref("nood").set({actief:false});
 
 db.ref("nood").on("value",s=>{
  const d=s.val();
- if(d&&d.actief){
-  alertOverlay.style.display="flex";
-  alertDetail.innerText="Door: "+d.door;
-  alarmAudio.play().catch(()=>{});
- }else{
-  alertOverlay.style.display="none";
-  alarmAudio.pause();alarmAudio.currentTime=0;
- }
+ alertOverlay.style.display=d&&d.actief?"flex":"none";
+ d&&d.actief?alarmAudio.play():alarmAudio.pause();
 });
 
 db.ref("gebruikers").on("value",s=>{
  ovdList.innerHTML="";
  Object.values(s.val()||{}).forEach(u=>{
-  const r=document.createElement("div");r.className="row";
-  r.innerHTML = `<div>${u.naam}</div><div>${u.roep}</div>`;
-  ovdList.appendChild(r);
+  ovdList.innerHTML+=`
+   <div class="row">
+    <div>${u.naam} (${u.roep})</div>
+    <div class="small">${statusTxt[u.status]||""}</div>
+   </div>`;
+ });
+});
+
+/* VTA */
+btnAddVta.onclick=()=>{
+ const ref=db.ref("vtas").push();
+ ref.set({naam:vtaNaam.value,kenteken:vtaKenteken.value,info:vtaInfo.value});
+};
+
+db.ref("vtas").on("value",s=>{
+ vtaTable.innerHTML="";
+ Object.entries(s.val()||{}).forEach(([id,v])=>{
+  vtaTable.innerHTML+=`
+   <tr>
+    <td>${v.naam}</td><td>${v.kenteken}</td><td>${v.info}</td>
+    <td><button class="btn ghost" onclick="db.ref('vtas/${id}').remove()">X</button></td>
+   </tr>`;
  });
 });
 </script>
 
 <script>
-/* ❄ VEILIGE SNEEUW — KAN NIETS KAPOT MAKEN */
 setInterval(()=>{
  const s=document.createElement("div");
  s.className="snow";
