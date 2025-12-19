@@ -11,34 +11,91 @@
 }
 *{box-sizing:border-box}
 body{
- margin:0;font-family:Arial;background:var(--bg);color:var(--white);overflow-x:hidden
+ margin:0;
+ font-family:Arial;
+ background:var(--bg);
+ color:var(--white);
+ overflow-x:hidden
 }
 body::before{
- content:'';position:fixed;inset:0;pointer-events:none;
- background:url('https://i.imgur.com/6QJjYMe.png') repeat;opacity:.07;z-index:0
+ content:'';
+ position:fixed;
+ inset:0;
+ pointer-events:none;
+ background:url('https://i.imgur.com/6QJjYMe.png') repeat;
+ opacity:.07;
+ z-index:0
 }
-.container{max-width:1200px;margin:20px auto;padding:20px;position:relative;z-index:1}
-.card{background:var(--card);padding:16px;border-radius:12px;margin-bottom:12px}
-.btn{background:var(--accent);color:#001b35;border:none;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer}
-.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2)}
-input,select,textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px}
-.row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:#031726;border-radius:8px;margin-bottom:6px}
+.container{
+ max-width:1200px;
+ margin:20px auto;
+ padding:20px;
+ position:relative;
+ z-index:1
+}
+.card{
+ background:var(--card);
+ padding:16px;
+ border-radius:12px;
+ margin-bottom:12px
+}
+.btn{
+ background:var(--accent);
+ color:#001b35;
+ border:none;
+ padding:10px 14px;
+ border-radius:8px;
+ font-weight:bold;
+ cursor:pointer
+}
+.btn.ghost{
+ background:transparent;
+ color:#fff;
+ border:1px solid rgba(255,255,255,.2)
+}
+input,select,textarea{
+ width:100%;
+ padding:10px;
+ border-radius:8px;
+ border:none;
+ margin-top:8px
+}
+.row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:10px;
+ background:#031726;
+ border-radius:8px;
+ margin-bottom:6px
+}
 .small{color:var(--muted);font-size:13px}
 .huge{padding:18px;font-size:20px;border-radius:12px}
-.nood{background:linear-gradient(180deg,#ff4d4f,#b00000);color:white}
+.nood{
+ background:linear-gradient(180deg,#ff4d4f,#b00000);
+ color:white
+}
 table{width:100%;border-collapse:collapse}
 th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 
 #alertOverlay{
- position:fixed;inset:0;display:none;
+ position:fixed;
+ inset:0;
+ display:none;
  background:rgba(120,0,0,.95);
- align-items:center;justify-content:center;
- text-align:center;z-index:9999;
+ align-items:center;
+ justify-content:center;
+ text-align:center;
+ z-index:9999;
  animation:pulse .8s infinite
 }
-@keyframes pulse{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
+@keyframes pulse{
+ 0%{opacity:1}
+ 50%{opacity:.3}
+ 100%{opacity:1}
+}
 
-/* ❄ SNEEUW (ALLEEN DIT) */
+/* ❄ SNEEUW */
 .snow{
  position:fixed;
  top:-20px;
@@ -47,7 +104,9 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
  z-index:2;
  animation:fall linear forwards
 }
-@keyframes fall{to{transform:translateY(110vh)}}
+@keyframes fall{
+ to{transform:translateY(110vh)}
+}
 </style>
 </head>
 
@@ -115,7 +174,9 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 <div class="card">
  <h3>VTAs</h3>
  <table>
-  <thead><tr><th>Naam</th><th>Kenteken</th><th>Info</th><th></th></tr></thead>
+  <thead>
+   <tr><th>Naam</th><th>Kenteken</th><th>Info</th><th></th></tr>
+  </thead>
   <tbody id="vtaTable"></tbody>
  </table>
 </div>
@@ -145,25 +206,32 @@ firebase.initializeApp({
  databaseURL:"https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/"
 });
 
-const db=firebase.database(),auth=firebase.auth();
+const db=firebase.database();
+const auth=firebase.auth();
 const ADMIN_ROEP="34-001";
-let current=null,adminMode=false;
+let current=null;
 
-const statusTxt={1:"Vrij",2:"Aanrijdend",3:"Ter plaatse",4:"Bezet"};
+const statusTxt={
+ 1:"Vrij",
+ 2:"Aanrijdend",
+ 3:"Ter plaatse",
+ 4:"Bezet"
+};
 
+/* LOGIN */
 btnLogin.onclick=async()=>{
- const naam=inputName.value.trim(),roep=inputRoep.value.trim();
+ const naam=inputName.value.trim();
+ const roep=inputRoep.value.trim();
  if(!naam||!roep)return alert("Vul alles in");
 
  if((await db.ref("blockedUsers/"+roep).once("value")).exists())
-  return alert("⛔ Je bent geblokkeerd door een admin");
+  return alert("⛔ Je bent geblokkeerd");
 
  if((await db.ref("gebruikers/"+roep).once("value")).exists())
   return alert("Roepnummer al actief");
 
  await auth.signInAnonymously();
- const isAdmin=roep===ADMIN_ROEP;
- current={naam,roep,isAdmin};
+ current={naam,roep,isAdmin:roep===ADMIN_ROEP};
 
  await db.ref("gebruikers/"+roep).set({
   naam,roep,status:1
@@ -173,35 +241,65 @@ btnLogin.onclick=async()=>{
  controlCard.style.display="block";
  currentUser.innerHTML=`Ingelogd als <b>${naam}</b> (${roep})`;
 
- if(isAdmin){
+ if(current.isAdmin){
   btnAdminMode.style.display="block";
   adminPanel.style.display="block";
  }
 };
 
+/* LOGOUT */
 btnLogout.onclick=async()=>{
  await db.ref("gebruikers/"+current.roep).remove();
  location.reload();
 };
 
-statusSelect.onchange=()=>db.ref("gebruikers/"+current.roep+"/status").set(+statusSelect.value);
-
-btnAdminMode.onclick=()=>adminMode=true;
-
-btnResetDienst.onclick=async()=>{
- if(!current.isAdmin)return alert("Alleen admin");
- if(confirm("Alles resetten?"))await db.ref("gebruikers").remove();
+/* STATUS */
+statusSelect.onchange=()=>{
+ if(statusSelect.value==8){
+  db.ref("gebruikers/"+current.roep).remove();
+  location.reload();
+ }else{
+  db.ref("gebruikers/"+current.roep+"/status").set(+statusSelect.value);
+ }
 };
 
-btnNood.onclick=()=>db.ref("nood").set({actief:true,door:current.roep});
-closeAlert.onclick=()=>db.ref("nood").set({actief:false});
+/* RESET */
+btnResetDienst.onclick=async()=>{
+ if(!current.isAdmin)return alert("Alleen admin");
+ if(confirm("Alles resetten?")){
+  await db.ref("gebruikers").remove();
+ }
+};
+
+/* NOODKNOP */
+btnNood.onclick=()=>{
+ db.ref("nood").set({
+  actief:true,
+  naam:current.naam,
+  roep:current.roep,
+  tijd:Date.now()
+ });
+};
+
+closeAlert.onclick=()=>{
+ db.ref("nood").set({actief:false});
+};
 
 db.ref("nood").on("value",s=>{
  const d=s.val();
- alertOverlay.style.display=d&&d.actief?"flex":"none";
- d&&d.actief?alarmAudio.play():alarmAudio.pause();
+ if(d && d.actief){
+  alertOverlay.style.display="flex";
+  alertDetail.innerText=
+   "Noodmelding door: "+d.naam+" ("+d.roep+")";
+  alarmAudio.play().catch(()=>{});
+ }else{
+  alertOverlay.style.display="none";
+  alarmAudio.pause();
+  alarmAudio.currentTime=0;
+ }
 });
 
+/* OVERZICHT + ADMIN */
 db.ref("gebruikers").on("value",s=>{
  ovdList.innerHTML="";
  adminUserList.innerHTML="";
@@ -211,7 +309,6 @@ db.ref("gebruikers").on("value",s=>{
     <div>${u.naam} (${roep})</div>
     <div class="small">${statusTxt[u.status]}</div>
    </div>`;
-
   if(current?.isAdmin){
    adminUserList.innerHTML+=`
     <div class="row">
