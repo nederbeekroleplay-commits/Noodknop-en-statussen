@@ -7,111 +7,124 @@
 
 <style>
 :root {
- --bg:#001b35;
- --card:rgba(0,0,0,0.7);
- --white:#fff;
- --accent:#ffc600;
- --muted:#a9c2d6;
-}
-*{box-sizing:border-box}
-
-/* 🌟 Achtergrond kerst foto */
-body{
- margin:0;
- font-family:Arial;
- background:url("https://cdn.pixabay.com/photo/2016/11/29/04/03/snow-1867271_1920.jpg") center/cover no-repeat; /* sneeuwlandschap kerstig */ :contentReference[oaicite:1]{index=1}
- color:var(--white);
- overflow-x:hidden;
+  --accent:#ffc600;
+  --white:#fff;
+  --muted:#a9c2d6;
+  --card-bg: rgba(0,0,0,0.6);
 }
 
-/* ❄ Sneeuwvlokken animatie */
+body {
+  margin:0;
+  font-family: Arial, sans-serif;
+  background: #001b35;
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* Container en cards */
+.container{
+  max-width:1200px;
+  margin:20px auto;
+  padding:20px;
+  backdrop-filter: blur(5px);
+}
+.card{
+  background: var(--card-bg);
+  padding:16px;
+  border-radius:12px;
+  margin-bottom:12px;
+}
+input, select, textarea{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin-top:8px;
+  color:#001b35;
+}
+.btn{
+  background: var(--accent);
+  color:#001b35;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.btn.ghost{
+  background:transparent;
+  color: var(--white);
+  border:1px solid rgba(255,255,255,.4);
+}
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px;
+  background: rgba(255,255,255,0.1);
+  border-radius:8px;
+  margin-bottom:6px;
+}
+.small{color:var(--muted); font-size:13px;}
+.huge{padding:18px; font-size:20px; border-radius:12px;}
+.nood{background: linear-gradient(180deg,#ff4d4f,#b00000); color:white;}
+table{width:100%; border-collapse:collapse;}
+th,td{padding:8px; border-bottom:1px solid rgba(255,255,255,.15);}
+.vta-table th{background: rgba(0,0,0,0.6);}
+#alertOverlay{
+  position:fixed; inset:0; display:none;
+  background: rgba(120,0,0,0.85);
+  align-items:center; justify-content:center;
+  text-align:center;
+  z-index:9999;
+}
+
+/* 🎄 Kerstanimatie */
+.christmas-light{
+  position: fixed;
+  width: 15px;
+  height: 15px;
+  border-radius:50%;
+  background-color: yellow;
+  box-shadow: 0 0 10px #ff0,0 0 20px #ff0;
+  animation: blink 1.5s infinite alternate;
+}
+@keyframes blink{
+  0%{opacity:0.2;}
+  50%{opacity:1;}
+  100%{opacity:0.2;}
+}
 .snowflake{
- position:fixed;
- top:-50px;
- color:white;
- font-size:1.5em;
- pointer-events:none;
- animation:fall linear infinite;
+  position: fixed;
+  top:-50px;
+  color: white;
+  font-size: 1.5em;
+  pointer-events:none;
+  animation: fall linear infinite;
 }
 @keyframes fall{
- 0%{transform:translateY(0);}
- 100%{transform:translateY(110vh);}
+ 0% {transform:translateY(0);}
+ 100% {transform:translateY(110vh);}
 }
-
-.container{
- max-width:1200px;
- margin:20px auto;
- padding:20px;
- background:rgba(0,0,0,0.5);
- border-radius:12px;
+/* 🎅 Optionele kerstman icoon */
+.santa{
+  position: fixed;
+  width:40px;
+  height:40px;
+  pointer-events:none;
+  animation: fly linear infinite;
 }
-
-.card{
- background:var(--card);
- padding:16px;
- margin-bottom:12px;
- border-radius:12px;
- position:relative;
-}
-
-.btn{
- background:var(--accent);
- color:#001b35;
- border:none;
- padding:10px 14px;
- border-radius:8px;
- font-weight:bold;
- cursor:pointer;
-}
-
-.btn.ghost{
- background:transparent;
- color:#fff;
- border:1px solid rgba(255,255,255,.2);
-}
-
-input,select,textarea{
- width:100%;
- padding:10px;
- border-radius:8px;
- border:none;
- margin-top:8px;
-}
-
-.row{
- display:flex;
- justify-content:space-between;
- align-items:center;
- padding:10px;
- background:rgba(0,0,0,0.6);
- border-radius:8px;
- margin-bottom:6px;
-}
-
-.small{color:var(--muted);font-size:13px}
-.huge{padding:18px;font-size:20px;border-radius:12px}
-.nood{background:linear-gradient(180deg,#ff4d4f,#b00000);color:white}
-
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
-.vta-table th{background:rgba(0,0,0,0.6)}
-
-#alertOverlay{
- position:fixed;inset:0;display:none;
- background:rgba(120,0,0,.95);
- align-items:center;justify-content:center;
- text-align:center;z-index:9999;
+@keyframes fly{
+  0%{transform: translateX(-50px) translateY(50px);}
+  100%{transform: translateX(110vw) translateY(300px);}
 }
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
-<h1 style="text-align:center; font-size:32px; margin-bottom:20px;">
- 🎄 Nederbeek — Meldkamer Kerst 🎄
-</h1>
+<h1 style="text-align:center;">🎄 Nederbeek — Meldkamer Kerst 🎄</h1>
 
 <div id="loginCard" class="card">
  <h3>Inloggen</h3>
@@ -122,7 +135,6 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 
 <div id="controlCard" class="card" style="display:none">
  <div id="currentUser" class="small"></div>
-
  <select id="statusSelect">
   <option value="1">1 — Vrij</option>
   <option value="2">2 — Aanrijdend</option>
@@ -131,21 +143,10 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
   <option value="8">8 — Uit dienst</option>
  </select>
 
- <button id="btnAdminMode" class="btn ghost" style="display:none;margin-top:8px">
-  🔐 Admin‑modus
- </button>
-
- <button id="btnNood" class="btn huge nood" style="margin-top:10px">
-  🚨 NOODKNOP
- </button>
-
- <button id="btnResetDienst" class="btn ghost" style="margin-top:8px">
-  🔄 Reset dienst
- </button>
-
- <button id="btnLogout" class="btn ghost" style="margin-top:10px">
-  Uitloggen
- </button>
+ <button id="btnAdminMode" class="btn ghost" style="display:none;margin-top:8px">🔐 Admin‑modus</button>
+ <button id="btnNood" class="btn huge nood" style="margin-top:10px">🚨 NOODKNOP</button>
+ <button id="btnResetDienst" class="btn ghost" style="margin-top:8px">🔄 Reset dienst</button>
+ <button id="btnLogout" class="btn ghost" style="margin-top:10px">Uitloggen</button>
 </div>
 
 <div class="card">
@@ -153,7 +154,6 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
  <div id="ovdList"></div>
 </div>
 
-<!-- Admin panel -->
 <div id="adminPanel" class="card" style="display:none">
  <h3>🔐 Admin panel — Gebruikers</h3>
  <div id="adminUserList"></div>
@@ -201,57 +201,13 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <script>
-// — Firebase config (zelfde als wat je al had)
-firebase.initializeApp({
- apiKey:"AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
- authDomain:"politie-nederbeek-fd6ff.firebaseapp.com",
- databaseURL:"https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/"
-});
-
-const db=firebase.database(),auth=firebase.auth(),storage=firebase.storage();
-const ADMIN_ROEP="34-001";
-let current=null,adminMode=false;
-
-const STATUS_MAP={
- 1:{t:"Vrij",c:"#2ecc71"},
- 2:{t:"Aanrijdend",c:"#f1c40f"},
- 3:{t:"Ter plaatse",c:"#3498db"},
- 4:{t:"Bezet",c:"#e67e22"},
- 8:{t:"Uit dienst",c:"#7f8c8d"}
-};
-
-/* LOGIN */
-btnLogin.onclick=async()=>{
- const naam=inputName.value.trim(), roep=inputRoep.value.trim();
- if(!naam||!roep)return alert("Vul alles in");
-
- if((await db.ref("blockedUsers/"+roep).once("value")).exists())
-  return alert("❌ Je bent geblokkeerd");
-
- if((await db.ref("gebruikers/"+roep).once("value")).exists())
-  return alert("Roepnummer al actief");
-
- await auth.signInAnonymously();
- const isAdmin = roep===ADMIN_ROEP;
- current={naam,roep,isAdmin};
-
- await db.ref("gebruikers/"+roep).set({
-  naam,roep:isAdmin?"ADMIN":roep,realRoep:roep,status:1
- });
-
- loginCard.style.display="none";
- controlCard.style.display="block";
- currentUser.innerHTML=`Ingelogd als <b>${naam}</b> (${isAdmin?"ADMIN":roep})`;
- if(isAdmin)btnAdminMode.style.display="block";
-};
-
-// … (de rest blijft exact zoals in je originele meldkamer code, admin panel, VTA, noodknop enz.)
-
+// 🔹 Firebase config + login/status/VTA/nood hier
+// Gebruik je originele werkende code
 </script>
 
-<!-- Sneeuw animatie -->
 <script>
-function createSnow(){
+// 🎅 Kerstanimatie JS
+function createSnow(){ 
  const flake=document.createElement('div');
  flake.className='snowflake';
  flake.innerText='❄';
@@ -261,7 +217,27 @@ function createSnow(){
  document.body.appendChild(flake);
  setTimeout(()=>flake.remove(),10000);
 }
-setInterval(createSnow,300);
+setInterval(createSnow,200);
+
+// 🎄 Lichtjes
+for(let i=0;i<30;i++){
+ const light=document.createElement('div');
+ light.className='christmas-light';
+ light.style.top=Math.random()*50+'px';
+ light.style.left=Math.random()*window.innerWidth+'px';
+ light.style.backgroundColor=["#ff0","#f00","#0f0","#0ff","#f0f"][Math.floor(Math.random()*5)];
+ document.body.appendChild(light);
+}
+
+// 🎅 Santa animatie
+for(let i=0;i<3;i++){
+ const santa=document.createElement('img');
+ santa.src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Santa_Claus_icon.svg/1200px-Santa_Claus_icon.svg.png"; 
+ santa.className='santa';
+ santa.style.animationDuration=(20+Math.random()*10)+'s';
+ santa.style.top=(50+Math.random()*200)+'px';
+ document.body.appendChild(santa);
+}
 </script>
 
 </body>
