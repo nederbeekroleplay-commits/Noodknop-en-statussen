@@ -145,10 +145,6 @@ const db=firebase.database(),auth=firebase.auth(),storage=firebase.storage();
 const ADMIN_ROEP="34-001";
 let current=null,adminMode=false;
 
-/* DOM */
-const el=id=>document.getElementById(id);
-const alarmAudio=el("alarmAudio");
-
 /* LOGIN */
 btnLogin.onclick=async()=>{
  const naam=inputName.value.trim(),roep=inputRoep.value.trim();
@@ -166,7 +162,7 @@ btnLogin.onclick=async()=>{
 
  loginCard.style.display="none";
  controlCard.style.display="block";
- currentUser.innerHTML=Ingelogd als <b>${naam}</b> (${isAdmin?"ADMIN":roep});
+ currentUser.innerHTML = `Ingelogd als <b>${naam}</b> (${isAdmin?"ADMIN":roep})`;
  if(isAdmin)btnAdminMode.style.display="block";
 };
 
@@ -215,7 +211,7 @@ db.ref("gebruikers").on("value",s=>{
  ovdList.innerHTML="";
  Object.values(s.val()||{}).forEach(u=>{
   const r=document.createElement("div");r.className="row";
-  r.innerHTML=<div>${u.naam}</div><div>${adminMode?(u.realRoep||u.roep):u.roep}</div>;
+  r.innerHTML = `<div>${u.naam}</div><div>${adminMode?(u.realRoep||u.roep):u.roep}</div>`;
   ovdList.appendChild(r);
  });
 });
@@ -238,15 +234,17 @@ db.ref("vtas").on("value",s=>{
  Object.values(s.val()||{}).forEach(v=>{
   if(vtaSearch.value && !JSON.stringify(v).toLowerCase().includes(vtaSearch.value.toLowerCase()))return;
   const tr=document.createElement("tr");
-  tr.innerHTML=
-  <td>${v.foto?<img src="${v.foto}">:<span class="small">Geen</span>}</td>
-  <td>${v.naam}</td>
-  <td>${v.kenteken}</td>
-  <td class="small">${v.info}</td>
-  <td><button class="btn ghost" onclick="db.ref('vtas/${v.id}').remove()">Verwijder</button></td>;
+  tr.innerHTML = `
+   <td>${v.foto ? `<img src="${v.foto}">` : `<span class="small">Geen</span>`}</td>
+   <td>${v.naam}</td>
+   <td>${v.kenteken}</td>
+   <td class="small">${v.info}</td>
+   <td><button class="btn ghost" onclick="db.ref('vtas/${v.id}').remove()">Verwijder</button></td>
+  `;
   vtaTable.appendChild(tr);
  });
 });
 </script>
+
 </body>
 </html>
