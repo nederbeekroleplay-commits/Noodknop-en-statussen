@@ -1,31 +1,54 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Nederbeek — Meldkamer</title>
 
 <style>
 :root{
---bg:#001b35;
---card:#07243d;
---muted:#a9c2d6;
---accent:#ffc600;
---white:#ffffff;
---danger:#d32f2f;
+ --bg:#001b35;
+ --card:#07243d;
+ --muted:#a9c2d6;
+ --accent:#ffc600;
+ --white:#ffffff;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,Arial;background:var(--bg);color:var(--white)}
-.container{max-width:1200px;margin:auto;padding:18px}
-.card{background:var(--card);padding:14px;border-radius:12px;margin-bottom:12px}
-.btn{background:var(--accent);color:#001b35;border:none;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--white)}
-.btn.danger{background:var(--danger);color:white}
-input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:transparent;color:white}
-.small{font-size:13px;color:var(--muted)}
-.row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;margin-bottom:6px;background:#031726}
-.status{padding:6px 10px;border-radius:8px;font-weight:700}
-.hidden{display:none}
+body{
+ margin:0;
+ font-family:Arial,Helvetica,sans-serif;
+ background:var(--bg);
+ color:var(--white)
+}
+
+/* kerst sfeer */
+body::before{
+ content:'';
+ position:fixed;
+ inset:0;
+ pointer-events:none;
+ background:url('https://i.imgur.com/6QJjYMe.png') repeat;
+ opacity:0.07;
+ z-index:0;
+}
+
+.container{max-width:1100px;margin:20px auto;padding:20px;position:relative;z-index:1}
+.card{background:var(--card);padding:16px;border-radius:12px;margin-bottom:12px}
+.btn{background:var(--accent);color:#001b35;border:none;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer}
+.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.2)}
+input,select{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px}
+.row{display:flex;justify-content:space-between;padding:10px;background:#031726;border-radius:8px;margin-bottom:6px}
+.small{color:var(--muted);font-size:13px}
+.huge{padding:18px;font-size:20px;border-radius:12px}
+.nood{background:linear-gradient(180deg,#ff4d4f,#b00000);color:white}
+#alertOverlay{
+ position:fixed;inset:0;display:none;
+ background:rgba(120,0,0,0.95);
+ align-items:center;justify-content:center;
+ text-align:center;z-index:9999;
+ animation:pulse .8s infinite;
+}
+@keyframes pulse{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
 </style>
 </head>
 
@@ -34,50 +57,51 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid
 
 <h2>Nederbeek — Meldkamer</h2>
 
-<!-- LOGIN -->
 <div id="loginCard" class="card">
-<h3>Inloggen</h3>
-<input id="inputName" placeholder="Naam">
-<input id="inputRoep" placeholder="Roepnummer">
-<button id="btnLogin" class="btn">Inloggen</button>
-<div class="small">Roepsnummer moet uniek zijn</div>
+ <h3>Inloggen</h3>
+ <input id="inputName" placeholder="Naam">
+ <input id="inputRoep" placeholder="Roepnummer (bv 1720)">
+ <button id="btnLogin" class="btn" style="margin-top:10px">Inloggen</button>
 </div>
 
-<!-- CONTROL -->
-<div id="controlCard" class="card hidden">
-<div id="currentUser"></div>
+<div id="controlCard" class="card" style="display:none">
+ <div id="currentUser" class="small"></div>
 
-<select id="statusSelect">
-<option value="1">1 — Inzetbaar</option>
-<option value="2">2 — Aanrijdend</option>
-<option value="3">3 — Ter plaatse</option>
-<option value="4">4 — Bezet</option>
-<option value="8">8 — Uit dienst</option>
-</select>
+ <select id="statusSelect">
+  <option value="1">1 — Vrij</option>
+  <option value="2">2 — Aanrijdend</option>
+  <option value="3">3 — Ter plaatse</option>
+  <option value="4">4 — Bezet</option>
+  <option value="8">8 — Uit dienst</option>
+ </select>
 
-<button id="btnNood" class="btn danger">🚨 NOOD</button>
-<button id="btnLogout" class="btn ghost">Uitloggen</button>
+ <button id="btnAdminMode" class="btn ghost" style="display:none;margin-top:8px">
+  🔐 Admin-modus
+ </button>
 
-<!-- ADMIN -->
-<div id="adminPanel" class="card hidden">
-<h3>ADMIN</h3>
-<button id="btnResetDienst" class="btn ghost">Reset alle gebruikers</button>
-<button id="btnViewLogs" class="btn ghost">Toon logs</button>
+ <button id="btnNood" class="btn huge nood" style="margin-top:10px">
+  🚨 NOODKNOP
+ </button>
+
+ <button id="btnLogout" class="btn ghost" style="margin-top:10px">
+  Uitloggen
+ </button>
 </div>
-</div>
 
-<!-- LIVE OVERZICHT -->
 <div class="card">
-<h3>Live gebruikers</h3>
-<div id="ovdList"></div>
+ <h3>Live overzicht</h3>
+ <div id="ovdList"></div>
 </div>
 
-<!-- LOGS -->
-<div id="logPanel" class="card hidden">
-<h3>Audit log</h3>
-<div id="logList"></div>
 </div>
 
+<!-- ALARM -->
+<div id="alertOverlay">
+ <div>
+  <h1>🚨 NOODALARM 🚨</h1>
+  <p id="alertDetail"></p>
+  <button class="btn" id="closeAlert">Stop alarm</button>
+ </div>
 </div>
 
 <!-- FIREBASE -->
@@ -86,131 +110,131 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
 <script>
-/* ================= CONFIG ================= */
-const firebaseConfig = {
-apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
-authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
-databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/",
-projectId: "politie-nederbeek-fd6ff"
-};
-firebase.initializeApp(firebaseConfig);
+/* ================= FIREBASE ================= */
+firebase.initializeApp({
+ apiKey: "AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
+ authDomain: "politie-nederbeek-fd6ff.firebaseapp.com",
+ databaseURL: "https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/"
+});
 
 const db = firebase.database();
 const auth = firebase.auth();
 
-/* ================= ADMIN ================= */
-const ADMIN_ROEP = "0001";
-
-/* ================= STATE ================= */
+/* ================= CONFIG ================= */
+const ADMIN_ROEP = "34-001";
 let currentUser = null;
+let adminMode = false;
+
+/* ================= DOM ================= */
+const inputName = document.getElementById("inputName");
+const inputRoep = document.getElementById("inputRoep");
+const btnLogin = document.getElementById("btnLogin");
+const btnLogout = document.getElementById("btnLogout");
+const loginCard = document.getElementById("loginCard");
+const controlCard = document.getElementById("controlCard");
+const currentUserDiv = document.getElementById("currentUser");
+const statusSelect = document.getElementById("statusSelect");
+const btnNood = document.getElementById("btnNood");
+const ovdList = document.getElementById("ovdList");
+const btnAdminMode = document.getElementById("btnAdminMode");
+const alertOverlay = document.getElementById("alertOverlay");
+const alertDetail = document.getElementById("alertDetail");
+const closeAlert = document.getElementById("closeAlert");
 
 /* ================= LOGIN ================= */
 btnLogin.onclick = async () => {
-const naam = inputName.value.trim();
-const roep = inputRoep.value.trim();
-if(!naam || !roep) return alert("Alles invullen");
+ const naam = inputName.value.trim();
+ const roep = inputRoep.value.trim();
+ if (!naam || !roep) return alert("Vul alles in");
 
-const snap = await db.ref("gebruikers/"+roep).once("value");
-if(snap.exists()) return alert("Dit roepnummer is al ingelogd");
+ const exists = await db.ref("gebruikers/"+roep).once("value");
+ if (exists.exists()) return alert("Roepnummer al in gebruik");
 
-await auth.signInAnonymously();
+ await auth.signInAnonymously();
 
-currentUser = {naam, roep};
-await db.ref("gebruikers/"+roep).set({
-naam, roep, status:1, tijd:Date.now()
-});
+ const isAdmin = roep === ADMIN_ROEP;
+ currentUser = { naam, roep, isAdmin };
 
-await log("login");
+ await db.ref("gebruikers/"+roep).set({
+  naam,
+  roep: isAdmin ? "ADMIN" : roep,
+  realRoep: roep,
+  status:1,
+  tijd:Date.now()
+ });
 
-loginCard.classList.add("hidden");
-controlCard.classList.remove("hidden");
-currentUserDiv();
+ loginCard.style.display="none";
+ controlCard.style.display="block";
+ currentUserDiv.innerHTML =
+  `Ingelogd als <b>${naam}</b> (${isAdmin?"ADMIN":roep})`;
 
-if(roep === ADMIN_ROEP){
-adminPanel.classList.remove("hidden");
-}
+ if (isAdmin) btnAdminMode.style.display="block";
 };
 
 /* ================= LOGOUT ================= */
 btnLogout.onclick = async () => {
-if(!currentUser) return;
-await log("logout");
-await db.ref("gebruikers/"+currentUser.roep).remove();
-currentUser=null;
-location.reload();
+ if (!currentUser) return;
+ await db.ref("gebruikers/"+currentUser.roep).remove();
+ location.reload();
 };
 
 /* ================= STATUS ================= */
 statusSelect.onchange = async ()=>{
-if(!currentUser) return;
-const s = Number(statusSelect.value);
-if(s===8){
-await log("uitdienst");
-await db.ref("gebruikers/"+currentUser.roep).remove();
-location.reload();
-return;
-}
-await db.ref("gebruikers/"+currentUser.roep+"/status").set(s);
-await log("status "+s);
+ if (!currentUser) return;
+ const s = Number(statusSelect.value);
+ if (s === 8){
+  await db.ref("gebruikers/"+currentUser.roep).remove();
+  location.reload();
+  return;
+ }
+ await db.ref("gebruikers/"+currentUser.roep+"/status").set(s);
+};
+
+/* ================= ADMIN MODE ================= */
+btnAdminMode.onclick = ()=>{
+ if (currentUser.roep !== ADMIN_ROEP) return;
+ adminMode = true;
+ alert("Admin-modus actief");
 };
 
 /* ================= NOOD ================= */
 btnNood.onclick = async ()=>{
-await db.ref("nood").set({
-actief:true,
-door:currentUser.roep,
-tijd:Date.now()
-});
-await log("NOOD");
+ await db.ref("nood").set({
+  actief:true,
+  door: currentUser.roep,
+  tijd:Date.now()
+ });
 };
 
-/* ================= ADMIN ================= */
-btnResetDienst.onclick = async ()=>{
-if(!confirm("Alles resetten?")) return;
-await db.ref("gebruikers").remove();
-await log("ADMIN RESET");
+closeAlert.onclick = async ()=>{
+ await db.ref("nood").set({actief:false});
 };
 
-btnViewLogs.onclick = ()=>{
-logPanel.classList.toggle("hidden");
-};
-
-/* ================= LOGGING ================= */
-function log(actie){
-return db.ref("logs").push({
-actie,
-door: currentUser ? currentUser.roep : "SYSTEM",
-tijd: Date.now()
-});
-}
-
-/* ================= RENDER ================= */
-db.ref("gebruikers").on("value",snap=>{
-ovdList.innerHTML="";
-const data = snap.val()||{};
-Object.values(data).forEach(u=>{
-const d=document.createElement("div");
-d.className="row";
-d.innerHTML=`<div>${u.naam} (${u.roep})</div><div class="status">${u.status}</div>`;
-ovdList.appendChild(d);
-});
+/* ================= LISTENERS ================= */
+db.ref("nood").on("value", snap=>{
+ const d = snap.val();
+ if (!d || !d.actief){
+  alertOverlay.style.display="none";
+  return;
+ }
+ alertOverlay.style.display="flex";
+ alertDetail.innerText =
+  "Geactiveerd door: "+d.door;
 });
 
-db.ref("logs").limitToLast(50).on("value",snap=>{
-logList.innerHTML="";
-const data = snap.val()||{};
-Object.values(data).reverse().forEach(l=>{
-const d=document.createElement("div");
-d.className="small";
-d.textContent=`${new Date(l.tijd).toLocaleString()} — ${l.door} — ${l.actie}`;
-logList.appendChild(d);
+db.ref("gebruikers").on("value", snap=>{
+ ovdList.innerHTML="";
+ const data = snap.val()||{};
+ Object.values(data).forEach(u=>{
+  const div=document.createElement("div");
+  div.className="row";
+  div.innerHTML = `
+   <div>${u.naam}</div>
+   <div>${adminMode?(u.realRoep||u.roep):u.roep}</div>
+  `;
+  ovdList.appendChild(div);
+ });
 });
-});
-
-function currentUserDiv(){
-document.getElementById("currentUser").innerHTML =
-`Ingelogd als <b>${currentUser.naam}</b> (${currentUser.roep})`;
-}
 </script>
 </body>
 </html>
