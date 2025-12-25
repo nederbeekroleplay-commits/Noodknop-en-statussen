@@ -71,7 +71,13 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:none;marg
  </select>
 
  <button id="btnNood" class="btn huge nood" style="margin-top:10px">🚨 NOODKNOP</button>
+
  <button id="btnLogout" class="btn ghost" style="margin-top:10px">Uitloggen</button>
+
+ <!-- 🔄 RESET DIENST (ALLEEN ADMIN) -->
+ <button id="btnResetDienst" class="btn ghost" style="margin-top:8px;display:none">
+  🔄 Reset dienst
+ </button>
 </div>
 
 <div class="card">
@@ -160,13 +166,27 @@ btnLogin.onclick=async()=>{
  loginCard.style.display="none";
  controlCard.style.display="block";
  currentUser.innerHTML=`Ingelogd als <b>${naam}</b> (${roep})`;
- if(current.isAdmin) adminPanel.style.display="block";
+
+ if(current.isAdmin){
+  adminPanel.style.display="block";
+  btnResetDienst.style.display="block";
+ }
 };
 
 /* LOGOUT */
 btnLogout.onclick=async()=>{
  await db.ref("gebruikers/"+current.roep).remove();
  location.reload();
+};
+
+/* RESET DIENST */
+btnResetDienst.onclick=async()=>{
+ if(!current?.isAdmin) return;
+ if(confirm("⚠ Weet je zeker dat je de hele dienst wilt resetten?")){
+  await db.ref("gebruikers").remove();
+  await db.ref("nood").set({actief:false});
+  alert("✅ Dienst is gereset");
+ }
 };
 
 /* STATUS */
@@ -211,10 +231,16 @@ db.ref("loginRequests").on("value",s=>{
   loginRequests.innerHTML+=`<div class="row"><div>${u.naam} (${r})</div><button class="btn" onclick="approve('${r}')">Toestaan</button></div>`;
  });
 });
-function approve(r){db.ref("approvedUsers/"+r).set(true);db.ref("loginRequests/"+r).remove();}
+function approve(r){
+ db.ref("approvedUsers/"+r).set(true);
+ db.ref("loginRequests/"+r).remove();
+}
 
 /* BLOCK */
-function blockUser(r){db.ref("blockedUsers/"+r).set(true);db.ref("gebruikers/"+r).remove();}
+function blockUser(r){
+ db.ref("blockedUsers/"+r).set(true);
+ db.ref("gebruikers/"+r).remove();
+}
 db.ref("blockedUsers").on("value",s=>{
  blockedList.innerHTML="";
  Object.keys(s.val()||{}).forEach(r=>{
@@ -224,12 +250,22 @@ db.ref("blockedUsers").on("value",s=>{
 
 /* VTA */
 btnAddVta.onclick=()=>{
- db.ref("vtas").push({naam:vtaNaam.value,kenteken:vtaKenteken.value,info:vtaInfo.value});
+ db.ref("vtas").push({
+  naam:vtaNaam.value,
+  kenteken:vtaKenteken.value,
+  info:vtaInfo.value
+ });
 };
 db.ref("vtas").on("value",s=>{
  vtaTable.innerHTML="";
  Object.entries(s.val()||{}).forEach(([id,v])=>{
-  vtaTable.innerHTML+=`<tr><td>${v.naam}</td><td>${v.kenteken}</td><td>${v.info}</td><td><button class="btn ghost" onclick="db.ref('vtas/${id}').remove()">X</button></td></tr>`;
+  vtaTable.innerHTML+=`
+   <tr>
+    <td>${v.naam}</td>
+    <td>${v.kenteken}</td>
+    <td>${v.info}</td>
+    <td><button class="btn ghost" onclick="db.ref('vtas/${id}').remove()">X</button></td>
+   </tr>`;
  });
 });
 </script>
