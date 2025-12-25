@@ -71,13 +71,8 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:none;marg
  </select>
 
  <button id="btnNood" class="btn huge nood" style="margin-top:10px">🚨 NOODKNOP</button>
-
  <button id="btnLogout" class="btn ghost" style="margin-top:10px">Uitloggen</button>
-
- <!-- 🔄 RESET DIENST (ALLEEN ADMIN) -->
- <button id="btnResetDienst" class="btn ghost" style="margin-top:8px;display:none">
-  🔄 Reset dienst
- </button>
+ <button id="btnResetDienst" class="btn ghost" style="margin-top:8px;display:none">🔄 Reset dienst</button>
 </div>
 
 <div class="card">
@@ -95,9 +90,7 @@ input,select,textarea{width:100%;padding:10px;border-radius:8px;border:none;marg
 
 <div class="card">
  <h3>VTAs</h3>
- <table width="100%">
-  <tbody id="vtaTable"></tbody>
- </table>
+ <table width="100%"><tbody id="vtaTable"></tbody></table>
 </div>
 
 <div id="adminPanel" class="card" style="display:none">
@@ -141,11 +134,32 @@ let current=null;
 
 const statusTxt={1:"Vrij",2:"Aanrijdend",3:"Ter plaatse",4:"Bezet"};
 
+/* 🚫 SCHELDWOORD FILTER */
+const bannedWords=[
+ "kanker","kut","tering","fuck","fck","shit","hoer","homo",
+ "nigger","neger","tyfus","lul","flikker","bitch","mongool"
+];
+
+function containsBanned(text){
+ const clean=text.toLowerCase().replace(/[^a-z0-9]/g,"");
+ return bannedWords.some(w=>clean.includes(w));
+}
+
 /* LOGIN */
 btnLogin.onclick=async()=>{
  const naam=inputName.value.trim();
  const roep=inputRoep.value.trim();
  if(!naam||!roep)return alert("Vul alles in");
+
+ // 🚫 check scheldwoorden
+ if(containsBanned(naam)||containsBanned(roep)){
+  await db.ref("blockedUsers/"+roep).set({
+   reden:"scheldwoord",
+   naam,
+   tijd:Date.now()
+  });
+  return alert("⛔ Je bent automatisch geblokkeerd");
+ }
 
  if((await db.ref("blockedUsers/"+roep).once("value")).exists())
   return alert("⛔ Geblokkeerd");
@@ -181,11 +195,9 @@ btnLogout.onclick=async()=>{
 
 /* RESET DIENST */
 btnResetDienst.onclick=async()=>{
- if(!current?.isAdmin) return;
- if(confirm("⚠ Weet je zeker dat je de hele dienst wilt resetten?")){
+ if(confirm("Dienst resetten?")){
   await db.ref("gebruikers").remove();
   await db.ref("nood").set({actief:false});
-  alert("✅ Dienst is gereset");
  }
 };
 
@@ -196,9 +208,7 @@ statusSelect.onchange=()=>{
 };
 
 /* NOOD */
-btnNood.onclick=()=>{
- db.ref("nood").set({actief:true,naam:current.naam,roep:current.roep});
-};
+btnNood.onclick=()=>db.ref("nood").set({actief:true,naam:current.naam,roep:current.roep});
 closeAlert.onclick=()=>db.ref("nood").set({actief:false});
 
 db.ref("nood").on("value",s=>{
@@ -231,41 +241,25 @@ db.ref("loginRequests").on("value",s=>{
   loginRequests.innerHTML+=`<div class="row"><div>${u.naam} (${r})</div><button class="btn" onclick="approve('${r}')">Toestaan</button></div>`;
  });
 });
-function approve(r){
- db.ref("approvedUsers/"+r).set(true);
- db.ref("loginRequests/"+r).remove();
-}
+function approve(r){db.ref("approvedUsers/"+r).set(true);db.ref("loginRequests/"+r).remove();}
 
 /* BLOCK */
-function blockUser(r){
- db.ref("blockedUsers/"+r).set(true);
- db.ref("gebruikers/"+r).remove();
-}
+function blockUser(r){db.ref("blockedUsers/"+r).set(true);db.ref("gebruikers/"+r).remove();}
 db.ref("blockedUsers").on("value",s=>{
  blockedList.innerHTML="";
- Object.keys(s.val()||{}).forEach(r=>{
-  blockedList.innerHTML+=`<div class="row"><div>${r}</div><button class="btn ghost" onclick="db.ref('blockedUsers/${r}').remove()">Deblokkeer</button></div>`;
+ Object.entries(s.val()||{}).forEach(([r,v])=>{
+  blockedList.innerHTML+=`<div class="row"><div>${r} (${v.reden||"handmatig"})</div><button class="btn ghost" onclick="db.ref('blockedUsers/${r}').remove()">Deblokkeer</button></div>`;
  });
 });
 
 /* VTA */
 btnAddVta.onclick=()=>{
- db.ref("vtas").push({
-  naam:vtaNaam.value,
-  kenteken:vtaKenteken.value,
-  info:vtaInfo.value
- });
+ db.ref("vtas").push({naam:vtaNaam.value,kenteken:vtaKenteken.value,info:vtaInfo.value});
 };
 db.ref("vtas").on("value",s=>{
  vtaTable.innerHTML="";
  Object.entries(s.val()||{}).forEach(([id,v])=>{
-  vtaTable.innerHTML+=`
-   <tr>
-    <td>${v.naam}</td>
-    <td>${v.kenteken}</td>
-    <td>${v.info}</td>
-    <td><button class="btn ghost" onclick="db.ref('vtas/${id}').remove()">X</button></td>
-   </tr>`;
+  vtaTable.innerHTML+=`<tr><td>${v.naam}</td><td>${v.kenteken}</td><td>${v.info}</td><td><button class="btn ghost" onclick="db.ref('vtas/${id}').remove()">X</button></td></tr>`;
  });
 });
 </script>
