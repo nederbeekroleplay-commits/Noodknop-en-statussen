@@ -75,37 +75,6 @@ input,select,textarea{
  background:linear-gradient(180deg,#ff4d4f,#b00000);
  color:white
 }
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
-
-#alertOverlay{
- position:fixed;
- inset:0;
- display:none;
- background:rgba(120,0,0,.95);
- align-items:center;
- justify-content:center;
- text-align:center;
- z-index:9999;
- animation:pulse .8s infinite
-}
-@keyframes pulse{
- 0%{opacity:1}
- 50%{opacity:.3}
- 100%{opacity:1}
-}
-
-.snow{
- position:fixed;
- top:-20px;
- color:white;
- pointer-events:none;
- z-index:2;
- animation:fall linear forwards
-}
-@keyframes fall{
- to{transform:translateY(110vh)}
-}
 </style>
 </head>
 
@@ -119,7 +88,7 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
  <h3>Inloggen</h3>
  <input id="inputName" placeholder="Naam">
  <input id="inputRoep" placeholder="Roepnummer">
- <button id="btnLogin" class="btn" style="margin-top:10px">Aanvragen</button>
+ <button id="btnLogin" class="btn" style="margin-top:10px">Aanmelden</button>
 </div>
 
 <div id="controlCard" class="card" style="display:none">
@@ -162,18 +131,6 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 
 </div>
 
-<div id="alertOverlay">
- <div>
-  <h1>🚨 NOODALARM 🚨</h1>
-  <p id="alertDetail"></p>
-  <button class="btn" id="closeAlert">Stop alarm</button>
- </div>
-</div>
-
-<audio id="alarmAudio" loop>
- <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg">
-</audio>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -197,7 +154,7 @@ const statusTxt = {
  4:"Bezet"
 };
 
-/* LOGIN AANVRAAG */
+/* LOGIN */
 btnLogin.onclick = async () => {
  const naam = inputName.value.trim();
  const roep = inputRoep.value.trim();
@@ -206,16 +163,23 @@ btnLogin.onclick = async () => {
  if ((await db.ref("blockedUsers/" + roep).once("value")).exists())
   return alert("⛔ Geblokkeerd");
 
- const approved = await db.ref("approvedUsers/" + roep).once("value");
- if (!approved.exists()) {
-  await db.ref("loginRequests/" + roep).set({ naam, roep, tijd: Date.now() });
-  return alert("⏳ Wachten op goedkeuring");
+ // 👮 ADMIN MAG ALTIJD ERIN
+ if (roep !== ADMIN_ROEP) {
+  const approved = await db.ref("approvedUsers/" + roep).once("value");
+  if (!approved.exists()) {
+   await db.ref("loginRequests/" + roep).set({
+    naam, roep, tijd: Date.now()
+   });
+   return alert("⏳ Wachten op goedkeuring door admin");
+  }
  }
 
  await auth.signInAnonymously();
  current = { naam, roep, isAdmin: roep === ADMIN_ROEP };
 
- await db.ref("gebruikers/" + roep).set({ naam, roep, status: 1 });
+ await db.ref("gebruikers/" + roep).set({
+  naam, roep, status: 1
+ });
 
  loginCard.style.display = "none";
  controlCard.style.display = "block";
@@ -256,30 +220,29 @@ db.ref("gebruikers").on("value", s => {
  });
 });
 
-/* LOGIN REQUESTS */
+/* LOGIN REQUESTS (ADMIN) */
 db.ref("loginRequests").on("value", s => {
  loginRequests.innerHTML = "";
  Object.entries(s.val() || {}).forEach(([roep,u])=>{
   loginRequests.innerHTML += `
    <div class="row">
     <div>${u.naam} (${roep})</div>
-    <button class="btn" onclick="approve('${roep}')">Toestaan</button>
+    <button class="btn" onclick="approveUser('${roep}')">Toestaan</button>
    </div>`;
  });
 });
 
-function approve(roep){
+function approveUser(roep){
  db.ref("approvedUsers/"+roep).set(true);
  db.ref("loginRequests/"+roep).remove();
 }
 
-/* BLOCK */
+/* BLOCKED USERS */
 function blockUser(roep){
  db.ref("blockedUsers/"+roep).set(true);
  db.ref("gebruikers/"+roep).remove();
 }
 
-/* BLOCKED */
 db.ref("blockedUsers").on("value", s=>{
  blockedList.innerHTML="";
  Object.keys(s.val()||{}).forEach(roep=>{
@@ -290,19 +253,6 @@ db.ref("blockedUsers").on("value", s=>{
    </div>`;
  });
 });
-</script>
-
-<script>
-setInterval(()=>{
- const s=document.createElement("div");
- s.className="snow";
- s.innerText="❄";
- s.style.left=Math.random()*100+"vw";
- s.style.fontSize=(12+Math.random()*20)+"px";
- s.style.animationDuration=(5+Math.random()*5)+"s";
- document.body.appendChild(s);
- setTimeout(()=>s.remove(),10000);
-},200);
 </script>
 
 </body>
