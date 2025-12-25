@@ -95,7 +95,6 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
  100%{opacity:1}
 }
 
-/* ❄ SNEEUW */
 .snow{
  position:fixed;
  top:-20px;
@@ -120,7 +119,7 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
  <h3>Inloggen</h3>
  <input id="inputName" placeholder="Naam">
  <input id="inputRoep" placeholder="Roepnummer">
- <button id="btnLogin" class="btn" style="margin-top:10px">Inloggen</button>
+ <button id="btnLogin" class="btn" style="margin-top:10px">Aanvragen</button>
 </div>
 
 <div id="controlCard" class="card" style="display:none">
@@ -134,16 +133,8 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
   <option value="8">8 — Uit dienst</option>
  </select>
 
- <button id="btnAdminMode" class="btn ghost" style="display:none;margin-top:8px">
-  🔐 Admin-modus
- </button>
-
  <button id="btnNood" class="btn huge nood" style="margin-top:10px">
   🚨 NOODKNOP
- </button>
-
- <button id="btnResetDienst" class="btn ghost" style="margin-top:8px">
-  🔄 Reset dienst
  </button>
 
  <button id="btnLogout" class="btn ghost" style="margin-top:10px">
@@ -157,28 +148,16 @@ th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 </div>
 
 <div id="adminPanel" class="card" style="display:none">
- <h3>Admin panel — blokkeren</h3>
+ <h3>Admin panel</h3>
+
+ <h4>Login-aanvragen</h4>
+ <div id="loginRequests"></div>
+
+ <h4>Actieve gebruikers</h4>
  <div id="adminUserList"></div>
- <h4>Geblokkeerde gebruikers</h4>
+
+ <h4>Geblokkeerd</h4>
  <div id="blockedList"></div>
-</div>
-
-<div class="card">
- <h3>VTA toevoegen</h3>
- <input id="vtaNaam" placeholder="Naam">
- <input id="vtaKenteken" placeholder="Kenteken">
- <textarea id="vtaInfo" placeholder="Signalement"></textarea>
- <button id="btnAddVta" class="btn" style="margin-top:8px">Opslaan VTA</button>
-</div>
-
-<div class="card">
- <h3>VTAs</h3>
- <table>
-  <thead>
-   <tr><th>Naam</th><th>Kenteken</th><th>Info</th><th></th></tr>
-  </thead>
-  <tbody id="vtaTable"></tbody>
- </table>
 </div>
 
 </div>
@@ -206,111 +185,69 @@ firebase.initializeApp({
  databaseURL:"https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/"
 });
 
-const db=firebase.database();
-const auth=firebase.auth();
-const ADMIN_ROEP="34-001";
-let current=null;
+const db = firebase.database();
+const auth = firebase.auth();
+const ADMIN_ROEP = "34-001";
+let current = null;
 
-const statusTxt={
+const statusTxt = {
  1:"Vrij",
  2:"Aanrijdend",
  3:"Ter plaatse",
  4:"Bezet"
 };
 
-/* LOGIN */
-btnLogin.onclick=async()=>{
- const naam=inputName.value.trim();
- const roep=inputRoep.value.trim();
- if(!naam||!roep)return alert("Vul alles in");
+/* LOGIN AANVRAAG */
+btnLogin.onclick = async () => {
+ const naam = inputName.value.trim();
+ const roep = inputRoep.value.trim();
+ if (!naam || !roep) return alert("Vul alles in");
 
- if((await db.ref("blockedUsers/"+roep).once("value")).exists())
-  return alert("⛔ Je bent geblokkeerd");
+ if ((await db.ref("blockedUsers/" + roep).once("value")).exists())
+  return alert("⛔ Geblokkeerd");
 
- if((await db.ref("gebruikers/"+roep).once("value")).exists())
-  return alert("Roepnummer al actief");
+ const approved = await db.ref("approvedUsers/" + roep).once("value");
+ if (!approved.exists()) {
+  await db.ref("loginRequests/" + roep).set({ naam, roep, tijd: Date.now() });
+  return alert("⏳ Wachten op goedkeuring");
+ }
 
  await auth.signInAnonymously();
- current={naam,roep,isAdmin:roep===ADMIN_ROEP};
+ current = { naam, roep, isAdmin: roep === ADMIN_ROEP };
 
- await db.ref("gebruikers/"+roep).set({
-  naam,roep,status:1
- });
+ await db.ref("gebruikers/" + roep).set({ naam, roep, status: 1 });
 
- loginCard.style.display="none";
- controlCard.style.display="block";
- currentUser.innerHTML=`Ingelogd als <b>${naam}</b> (${roep})`;
+ loginCard.style.display = "none";
+ controlCard.style.display = "block";
+ currentUser.innerHTML = `Ingelogd als <b>${naam}</b> (${roep})`;
 
- if(current.isAdmin){
-  btnAdminMode.style.display="block";
-  adminPanel.style.display="block";
- }
+ if (current.isAdmin) adminPanel.style.display = "block";
 };
 
 /* LOGOUT */
-btnLogout.onclick=async()=>{
- await db.ref("gebruikers/"+current.roep).remove();
+btnLogout.onclick = async () => {
+ await db.ref("gebruikers/" + current.roep).remove();
  location.reload();
 };
 
 /* STATUS */
-statusSelect.onchange=()=>{
- if(statusSelect.value==8){
-  db.ref("gebruikers/"+current.roep).remove();
-  location.reload();
- }else{
-  db.ref("gebruikers/"+current.roep+"/status").set(+statusSelect.value);
- }
+statusSelect.onchange = () => {
+ if (statusSelect.value == 8) btnLogout.onclick();
+ else db.ref("gebruikers/" + current.roep + "/status").set(+statusSelect.value);
 };
 
-/* RESET */
-btnResetDienst.onclick=async()=>{
- if(!current.isAdmin)return alert("Alleen admin");
- if(confirm("Alles resetten?")){
-  await db.ref("gebruikers").remove();
- }
-};
-
-/* NOODKNOP */
-btnNood.onclick=()=>{
- db.ref("nood").set({
-  actief:true,
-  naam:current.naam,
-  roep:current.roep,
-  tijd:Date.now()
- });
-};
-
-closeAlert.onclick=()=>{
- db.ref("nood").set({actief:false});
-};
-
-db.ref("nood").on("value",s=>{
- const d=s.val();
- if(d && d.actief){
-  alertOverlay.style.display="flex";
-  alertDetail.innerText=
-   "Noodmelding door: "+d.naam+" ("+d.roep+")";
-  alarmAudio.play().catch(()=>{});
- }else{
-  alertOverlay.style.display="none";
-  alarmAudio.pause();
-  alarmAudio.currentTime=0;
- }
-});
-
-/* OVERZICHT + ADMIN */
-db.ref("gebruikers").on("value",s=>{
- ovdList.innerHTML="";
- adminUserList.innerHTML="";
- Object.entries(s.val()||{}).forEach(([roep,u])=>{
-  ovdList.innerHTML+=`
+/* OVERZICHT */
+db.ref("gebruikers").on("value", s => {
+ ovdList.innerHTML = "";
+ adminUserList.innerHTML = "";
+ Object.entries(s.val() || {}).forEach(([roep,u])=>{
+  ovdList.innerHTML += `
    <div class="row">
     <div>${u.naam} (${roep})</div>
     <div class="small">${statusTxt[u.status]}</div>
    </div>`;
-  if(current?.isAdmin){
-   adminUserList.innerHTML+=`
+  if (current?.isAdmin){
+   adminUserList.innerHTML += `
     <div class="row">
      <div>${u.naam} (${roep})</div>
      <button class="btn ghost" onclick="blockUser('${roep}')">Blokkeer</button>
@@ -319,53 +256,43 @@ db.ref("gebruikers").on("value",s=>{
  });
 });
 
-function blockUser(roep){
- if(confirm("Blokkeer "+roep+"?")){
-  db.ref("blockedUsers/"+roep).set(true);
-  db.ref("gebruikers/"+roep).remove();
- }
+/* LOGIN REQUESTS */
+db.ref("loginRequests").on("value", s => {
+ loginRequests.innerHTML = "";
+ Object.entries(s.val() || {}).forEach(([roep,u])=>{
+  loginRequests.innerHTML += `
+   <div class="row">
+    <div>${u.naam} (${roep})</div>
+    <button class="btn" onclick="approve('${roep}')">Toestaan</button>
+   </div>`;
+ });
+});
+
+function approve(roep){
+ db.ref("approvedUsers/"+roep).set(true);
+ db.ref("loginRequests/"+roep).remove();
 }
 
-db.ref("blockedUsers").on("value",s=>{
+/* BLOCK */
+function blockUser(roep){
+ db.ref("blockedUsers/"+roep).set(true);
+ db.ref("gebruikers/"+roep).remove();
+}
+
+/* BLOCKED */
+db.ref("blockedUsers").on("value", s=>{
  blockedList.innerHTML="";
  Object.keys(s.val()||{}).forEach(roep=>{
   blockedList.innerHTML+=`
    <div class="row">
     <div>${roep}</div>
-    <button class="btn ghost" onclick="unblockUser('${roep}')">Deblokkeer</button>
+    <button class="btn ghost" onclick="db.ref('blockedUsers/${roep}').remove()">Deblokkeer</button>
    </div>`;
- });
-});
-
-function unblockUser(roep){
- db.ref("blockedUsers/"+roep).remove();
-}
-
-/* VTA */
-btnAddVta.onclick=()=>{
- db.ref("vtas").push({
-  naam:vtaNaam.value,
-  kenteken:vtaKenteken.value,
-  info:vtaInfo.value
- });
-};
-
-db.ref("vtas").on("value",s=>{
- vtaTable.innerHTML="";
- Object.entries(s.val()||{}).forEach(([id,v])=>{
-  vtaTable.innerHTML+=`
-   <tr>
-    <td>${v.naam}</td>
-    <td>${v.kenteken}</td>
-    <td>${v.info}</td>
-    <td><button class="btn ghost" onclick="db.ref('vtas/${id}').remove()">X</button></td>
-   </tr>`;
  });
 });
 </script>
 
 <script>
-/* ❄ SNEEUW */
 setInterval(()=>{
  const s=document.createElement("div");
  s.className="snow";
