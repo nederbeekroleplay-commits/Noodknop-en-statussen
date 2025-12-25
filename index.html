@@ -135,15 +135,8 @@ let current=null;
 const statusTxt={1:"Vrij",2:"Aanrijdend",3:"Ter plaatse",4:"Bezet"};
 
 /* 🚫 SCHELDWOORD FILTER */
-const bannedWords=[
- "kanker","kut","tering","fuck","fck","shit","hoer","homo",
- "nigger","neger","tyfus","lul","flikker","bitch","mongool"
-];
-
-function containsBanned(text){
- const clean=text.toLowerCase().replace(/[^a-z0-9]/g,"");
- return bannedWords.some(w=>clean.includes(w));
-}
+const bannedWords=["kanker","kut","tering","fuck","fck","shit","hoer","homo","nigger","neger","tyfus","lul","flikker","bitch","mongool"];
+function containsBanned(text){const clean=text.toLowerCase().replace(/[^a-z0-9]/g,"");return bannedWords.some(w=>clean.includes(w));}
 
 /* LOGIN */
 btnLogin.onclick=async()=>{
@@ -151,13 +144,8 @@ btnLogin.onclick=async()=>{
  const roep=inputRoep.value.trim();
  if(!naam||!roep)return alert("Vul alles in");
 
- // 🚫 check scheldwoorden
  if(containsBanned(naam)||containsBanned(roep)){
-  await db.ref("blockedUsers/"+roep).set({
-   reden:"scheldwoord",
-   naam,
-   tijd:Date.now()
-  });
+  await db.ref("blockedUsers/"+roep).set({reden:"scheldwoord",naam,tijd:Date.now()});
   return alert("⛔ Je bent automatisch geblokkeerd");
  }
 
@@ -257,11 +245,17 @@ btnAddVta.onclick=()=>{
  db.ref("vtas").push({naam:vtaNaam.value,kenteken:vtaKenteken.value,info:vtaInfo.value});
 };
 db.ref("vtas").on("value",s=>{
- vtaTable.innerHTML="";
+ vtaTable.innerHTML = "";
  Object.entries(s.val()||{}).forEach(([id,v])=>{
-  vtaTable.innerHTML+=`<tr><td>${v.naam}</td><td>${v.kenteken}</td><td>${v.info}</td><td><button class="btn ghost" onclick="db.ref('vtas/${id}').remove()">X</button></td></tr>`;
+  const deleteBtn = current?.isAdmin ? `<button class="btn ghost" onclick="deleteVta('${id}')">X</button>` : ``;
+  vtaTable.innerHTML+=`<tr><td>${v.naam}</td><td>${v.kenteken}</td><td>${v.info}</td><td>${deleteBtn}</td></tr>`;
  });
 });
+
+function deleteVta(id){
+ if(!current?.isAdmin)return alert("⛔ Alleen admin mag VTAs verwijderen");
+ if(confirm("VTA verwijderen?")) db.ref("vtas/"+id).remove();
+}
 </script>
 
 </body>
