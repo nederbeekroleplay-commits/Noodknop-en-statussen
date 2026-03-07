@@ -1,261 +1,333 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nederbeek — Meldkamer</title>
+
+<meta charset="UTF-8">
+<title>Politie Nederbeek Dashboard</title>
 
 <style>
-:root{
- --bg:#001b35;--card:#07243d;--muted:#a9c2d6;--accent:#ffc600;--white:#fff
-}
-*{box-sizing:border-box}
-body{
- margin:0;
- font-family:Arial;
- background:var(--bg);
- color:var(--white);
- overflow-x:hidden
-}
-body::before{
- content:'';
- position:fixed;
- inset:0;
- pointer-events:none;
- background:url('https://i.imgur.com/6QJjYMe.png') repeat;
- opacity:.07;
- z-index:0
-}
-.container{max-width:1200px;margin:20px auto;padding:20px;position:relative;z-index:1}
-.card{background:var(--card);padding:16px;border-radius:12px;margin-bottom:12px}
-.btn{background:var(--accent);color:#001b35;border:none;padding:10px 14px;border-radius:8px;font-weight:bold;cursor:pointer}
-.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2)}
-input,select,textarea{width:100%;padding:10px;border-radius:8px;border:none;margin-top:8px}
-.row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:#031726;border-radius:8px;margin-bottom:6px}
-.small{color:var(--muted);font-size:13px}
-.huge{padding:18px;font-size:20px;border-radius:12px}
-.nood{background:linear-gradient(180deg,#ff4d4f,#b00000);color:white}
 
-#alertOverlay{
- position:fixed;inset:0;display:none;
- background:rgba(120,0,0,.95);
- align-items:center;justify-content:center;
- text-align:center;z-index:9999;
- animation:pulse .8s infinite
+body{
+margin:0;
+font-family:Arial;
+background:#061a2e;
+color:white;
 }
-@keyframes pulse{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
+
+.sidebar{
+position:fixed;
+width:220px;
+height:100%;
+background:#02101c;
+padding:20px;
+}
+
+.sidebar h2{
+color:#ffc600;
+}
+
+.sidebar button{
+width:100%;
+margin-top:10px;
+padding:10px;
+background:#0c2d4a;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+.content{
+margin-left:240px;
+padding:30px;
+}
+
+.card{
+background:#0e2b4a;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+.agent{
+background:#081e33;
+padding:10px;
+margin-bottom:6px;
+border-radius:6px;
+}
+
+.btn{
+background:#ffc600;
+border:none;
+padding:10px;
+cursor:pointer;
+}
+
+.nood{
+background:red;
+color:white;
+padding:15px;
+font-size:20px;
+}
+
 </style>
+
 </head>
 
 <body>
 
-<div class="container">
-<h2>Nederbeek — Meldkamer</h2>
+<div class="sidebar">
 
-<div id="loginCard" class="card">
- <h3>Inloggen</h3>
- <input id="inputName" placeholder="Naam">
- <input id="inputRoep" placeholder="Roepnummer">
- <button id="btnLogin" class="btn" style="margin-top:10px">Aanmelden</button>
+<h2>Meldkamer</h2>
+
+<button onclick="showTab('agents')">Agenten</button>
+
+<button onclick="showTab('porto')">Porto kanalen</button>
+
+<button onclick="showTab('agenda')">Agenda</button>
+
+<button onclick="showTab('vta')">VTA</button>
+
+<button onclick="logout()">Uitloggen</button>
+
 </div>
 
-<div id="controlCard" class="card" style="display:none">
- <div id="currentUser" class="small"></div>
+<div class="content">
 
- <select id="statusSelect">
-  <option value="1">1 — Vrij</option>
-  <option value="2">2 — Aanrijdend</option>
-  <option value="3">3 — Ter plaatse</option>
-  <option value="4">4 — Bezet</option>
-  <option value="8">8 — Uit dienst</option>
- </select>
+<div id="agents" class="card">
 
- <button id="btnNood" class="btn huge nood" style="margin-top:10px">🚨 NOODKNOP</button>
- <button id="btnLogout" class="btn ghost" style="margin-top:10px">Uitloggen</button>
- <button id="btnResetDienst" class="btn ghost" style="margin-top:8px;display:none">🔄 Reset dienst</button>
+<h2>Actieve Agenten</h2>
+
+<div id="agentList"></div>
+
 </div>
+
+
+<div id="porto" class="card" style="display:none">
+
+<h2>Porto kanalen</h2>
+
+<button class="btn" onclick="setPorto('porto1')">Porto 1</button>
+<button class="btn" onclick="setPorto('porto2')">Porto 2</button>
+<button class="btn" onclick="setPorto('recherche')">Recherche</button>
+<button class="btn" onclick="setPorto('DSI')">DSI</button>
+
+</div>
+
+
+<div id="agenda" class="card" style="display:none">
+
+<h2>Training agenda</h2>
+
+<input id="titel" placeholder="Training">
+
+<input type="date" id="datum">
+
+<button onclick="addAgenda()">Toevoegen</button>
+
+<div id="agendaList"></div>
+
+</div>
+
+
+<div id="vta" class="card" style="display:none">
+
+<h2>VTA</h2>
+
+<input id="vtaNaam" placeholder="Naam">
+
+<input id="vtaKenteken" placeholder="Kenteken">
+
+<button onclick="addVta()">Opslaan</button>
+
+<div id="vtaList"></div>
+
+</div>
+
 
 <div class="card">
- <h3>Live overzicht</h3>
- <div id="ovdList"></div>
+
+<button class="nood" onclick="sendNood()">🚨 NOODKNOP</button>
+
 </div>
 
-<div class="card">
- <h3>VTA toevoegen</h3>
- <input id="vtaNaam" placeholder="Naam">
- <input id="vtaKenteken" placeholder="Kenteken">
- <textarea id="vtaInfo" placeholder="Signalement"></textarea>
- <button id="btnAddVta" class="btn" style="margin-top:8px">Opslaan VTA</button>
 </div>
 
-<div class="card">
- <h3>VTAs</h3>
- <table width="100%"><tbody id="vtaTable"></tbody></table>
-</div>
-
-<div id="adminPanel" class="card" style="display:none">
- <h3>Admin panel</h3>
- <h4>Login-aanvragen</h4>
- <div id="loginRequests"></div>
- <h4>Actieve gebruikers</h4>
- <div id="adminUserList"></div>
- <h4>Geblokkeerd</h4>
- <div id="blockedList"></div>
-</div>
-</div>
-
-<div id="alertOverlay">
- <div>
-  <h1>🚨 NOODALARM 🚨</h1>
-  <p id="alertDetail"></p>
-  <button class="btn" id="closeAlert">Stop alarm</button>
- </div>
-</div>
-
-<audio id="alarmAudio" loop>
- <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg">
-</audio>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
+
 firebase.initializeApp({
- apiKey:"AIzaSyBa_2hGKhEH_dU6xDIfIjIO8_BlubM-JSc",
- authDomain:"politie-nederbeek-fd6ff.firebaseapp.com",
- databaseURL:"https://politie-nederbeek-fd6ff-default-rtdb.europe-west1.firebasedatabase.app/"
+ apiKey:"YOURKEY",
+ authDomain:"YOURPROJECT.firebaseapp.com",
+ databaseURL:"YOURDATABASEURL"
 });
 
-const db=firebase.database();
 const auth=firebase.auth();
-const ADMIN_ROEP="34-001";
-let current=null;
+const db=firebase.database();
 
-const statusTxt={1:"Vrij",2:"Aanrijdend",3:"Ter plaatse",4:"Bezet"};
+let currentUser;
 
-/* 🚫 SCHELDWOORD FILTER */
-const bannedWords=["kanker","kut","tering","fuck","fck","shit","hoer","homo","nigger","neger","tyfus","lul","flikker","bitch","mongool"];
-function containsBanned(text){const clean=text.toLowerCase().replace(/[^a-z0-9]/g,"");return bannedWords.some(w=>clean.includes(w));}
+auth.onAuthStateChanged(user=>{
 
-/* LOGIN */
-btnLogin.onclick=async()=>{
- const naam=inputName.value.trim();
- const roep=inputRoep.value.trim();
- if(!naam||!roep)return alert("Vul alles in");
+if(!user){
 
- if(containsBanned(naam)||containsBanned(roep)){
-  await db.ref("blockedUsers/"+roep).set({reden:"scheldwoord",naam,tijd:Date.now()});
-  return alert("⛔ Je bent automatisch geblokkeerd");
- }
+location="login.html";
+return;
 
- if((await db.ref("blockedUsers/"+roep).once("value")).exists())
-  return alert("⛔ Geblokkeerd");
-
- if(roep!==ADMIN_ROEP){
-  const ok=await db.ref("approvedUsers/"+roep).once("value");
-  if(!ok.exists()){
-   await db.ref("loginRequests/"+roep).set({naam,roep,tijd:Date.now()});
-   return alert("⏳ Wachten op goedkeuring");
-  }
- }
-
- await auth.signInAnonymously();
- current={naam,roep,isAdmin:roep===ADMIN_ROEP};
-
- await db.ref("gebruikers/"+roep).set({naam,roep,status:1});
-
- loginCard.style.display="none";
- controlCard.style.display="block";
- currentUser.innerHTML=`Ingelogd als <b>${naam}</b> (${roep})`;
-
- if(current.isAdmin){
-  adminPanel.style.display="block";
-  btnResetDienst.style.display="block";
- }
-};
-
-/* LOGOUT */
-btnLogout.onclick=async()=>{
- await db.ref("gebruikers/"+current.roep).remove();
- location.reload();
-};
-
-/* RESET DIENST */
-btnResetDienst.onclick=async()=>{
- if(confirm("Dienst resetten?")){
-  await db.ref("gebruikers").remove();
-  await db.ref("nood").set({actief:false});
- }
-};
-
-/* STATUS */
-statusSelect.onchange=()=>{
- if(statusSelect.value==8) btnLogout.onclick();
- else db.ref("gebruikers/"+current.roep+"/status").set(+statusSelect.value);
-};
-
-/* NOOD */
-btnNood.onclick=()=>db.ref("nood").set({actief:true,naam:current.naam,roep:current.roep});
-closeAlert.onclick=()=>db.ref("nood").set({actief:false});
-
-db.ref("nood").on("value",s=>{
- const d=s.val();
- if(d&&d.actief){
-  alertOverlay.style.display="flex";
-  alertDetail.innerText=`Noodmelding door ${d.naam} (${d.roep})`;
-  alarmAudio.play().catch(()=>{});
- }else{
-  alertOverlay.style.display="none";
-  alarmAudio.pause();alarmAudio.currentTime=0;
- }
-});
-
-/* OVERZICHT */
-db.ref("gebruikers").on("value",s=>{
- ovdList.innerHTML="";adminUserList.innerHTML="";
- Object.entries(s.val()||{}).forEach(([r,u])=>{
-  ovdList.innerHTML+=`<div class="row"><div>${u.naam} (${r})</div><div class="small">${statusTxt[u.status]}</div></div>`;
-  if(current?.isAdmin){
-   adminUserList.innerHTML+=`<div class="row"><div>${u.naam} (${r})</div><button class="btn ghost" onclick="blockUser('${r}')">Blokkeer</button></div>`;
-  }
- });
-});
-
-/* LOGIN REQUESTS */
-db.ref("loginRequests").on("value",s=>{
- loginRequests.innerHTML="";
- Object.entries(s.val()||{}).forEach(([r,u])=>{
-  loginRequests.innerHTML+=`<div class="row"><div>${u.naam} (${r})</div><button class="btn" onclick="approve('${r}')">Toestaan</button></div>`;
- });
-});
-function approve(r){db.ref("approvedUsers/"+r).set(true);db.ref("loginRequests/"+r).remove();}
-
-/* BLOCK */
-function blockUser(r){db.ref("blockedUsers/"+r).set(true);db.ref("gebruikers/"+r).remove();}
-db.ref("blockedUsers").on("value",s=>{
- blockedList.innerHTML="";
- Object.entries(s.val()||{}).forEach(([r,v])=>{
-  blockedList.innerHTML+=`<div class="row"><div>${r} (${v.reden||"handmatig"})</div><button class="btn ghost" onclick="db.ref('blockedUsers/${r}').remove()">Deblokkeer</button></div>`;
- });
-});
-
-/* VTA */
-btnAddVta.onclick=()=>{
- db.ref("vtas").push({naam:vtaNaam.value,kenteken:vtaKenteken.value,info:vtaInfo.value});
-};
-db.ref("vtas").on("value",s=>{
- vtaTable.innerHTML = "";
- Object.entries(s.val()||{}).forEach(([id,v])=>{
-  const deleteBtn = current?.isAdmin ? `<button class="btn ghost" onclick="deleteVta('${id}')">X</button>` : ``;
-  vtaTable.innerHTML+=`<tr><td>${v.naam}</td><td>${v.kenteken}</td><td>${v.info}</td><td>${deleteBtn}</td></tr>`;
- });
-});
-
-function deleteVta(id){
- if(!current?.isAdmin)return alert("⛔ Alleen admin mag VTAs verwijderen");
- if(confirm("VTA verwijderen?")) db.ref("vtas/"+id).remove();
 }
+
+currentUser=user;
+
+loadAgents();
+loadAgenda();
+loadVtas();
+
+});
+
+function logout(){
+
+auth.signOut();
+
+}
+
+function showTab(tab){
+
+["agents","porto","agenda","vta"].forEach(t=>{
+
+document.getElementById(t).style.display="none"
+
+});
+
+document.getElementById(tab).style.display="block";
+
+}
+
+function loadAgents(){
+
+db.ref("users").on("value",snap=>{
+
+agentList.innerHTML="";
+
+snap.forEach(child=>{
+
+const u=child.val();
+
+agentList.innerHTML+=`
+<div class="agent">
+
+${u.naam} (${u.roepnummer}) - ${u.rang}
+
+</div>
+`;
+
+});
+
+});
+
+}
+
+function setPorto(channel){
+
+db.ref("users/"+currentUser.uid+"/porto").set(channel);
+
+alert("Porto ingesteld op "+channel);
+
+}
+
+function addAgenda(){
+
+const titel=document.getElementById("titel").value;
+
+const datum=document.getElementById("datum").value;
+
+db.ref("agenda").push({
+
+titel:titel,
+datum:datum
+
+});
+
+}
+
+function loadAgenda(){
+
+db.ref("agenda").on("value",snap=>{
+
+agendaList.innerHTML="";
+
+snap.forEach(child=>{
+
+const a=child.val();
+
+agendaList.innerHTML+=`
+
+<div class="agent">
+
+${a.titel} - ${a.datum}
+
+</div>
+
+`;
+
+});
+
+});
+
+}
+
+function addVta(){
+
+db.ref("vtas").push({
+
+naam:vtaNaam.value,
+kenteken:vtaKenteken.value
+
+});
+
+}
+
+function loadVtas(){
+
+db.ref("vtas").on("value",snap=>{
+
+vtaList.innerHTML="";
+
+snap.forEach(child=>{
+
+const v=child.val();
+
+vtaList.innerHTML+=`
+
+<div class="agent">
+
+${v.naam} - ${v.kenteken}
+
+</div>
+
+`;
+
+});
+
+});
+
+}
+
+function sendNood(){
+
+db.ref("nood").set({
+
+actief:true,
+tijd:Date.now()
+
+});
+
+}
+
 </script>
 
 </body>
